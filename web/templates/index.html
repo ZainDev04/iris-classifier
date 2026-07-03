@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iris Classifier — DecodeLabs AI Project 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-row">
+      <div class="header-left">
+        <span class="header-tag">DecodeLabs AI Internship · Project 2</span>
+        <h1 class="header-title">Iris Species Classifier</h1>
+        <p class="header-sub">K-Nearest Neighbors · Supervised Learning · Scikit-learn</p>
+      </div>
+      <div class="stat-pills">
+        <div class="pill">
+          <span class="pill-label">Accuracy</span>
+          <span class="pill-value">{{ accuracy }}%</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">F1 Score</span>
+          <span class="pill-value">{{ f1 }}</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Algorithm</span>
+          <span class="pill-value">KNN · K=5</span>
+        </div>
+        <div class="pill">
+          <span class="pill-label">Dataset</span>
+          <span class="pill-value">150 samples</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPECIMEN DIAGRAM: annotated iris with live dimension read-outs (desktop/tablet) -->
+    <div class="specimen-diagram">
+      <svg viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of an iris flower with live measurement values">
+        <g transform="translate(500,105)">
+          <path class="iris-outline" d="M0,-6 C-40,10 -78,50 -70,88 C-64,108 -34,110 -14,92 C-2,80 -2,40 0,-6 Z"/>
+          <path class="iris-outline" d="M0,-6 C40,10 78,50 70,88 C64,108 34,110 14,92 C2,80 2,40 0,-6 Z"/>
+          <path class="iris-vein" d="M0,-2 C-8,30 -18,60 -34,84"/>
+          <path class="iris-vein" d="M0,-2 C8,30 18,60 34,84"/>
+          <path class="iris-outline" d="M0,-8 C-22,-40 -18,-78 0,-96 C18,-78 22,-40 0,-8 Z"/>
+          <path class="iris-vein" d="M0,-10 L0,-90"/>
+          <path class="iris-outline" d="M0,96 L0,150"/>
+        </g>
+
+        <line class="dim-line" x1="500" y1="15" x2="500" y2="0" />
+        <line class="dim-line" x1="500" y1="0" x2="180" y2="0" />
+        <circle class="dim-dot" cx="500" cy="15" r="2.5"/>
+        <text class="dim-label" x="176" y="-6" text-anchor="end">SEPAL LENGTH</text>
+        <text class="dim-value" id="dim-sl" x="176" y="17" text-anchor="end">5.1 cm</text>
+
+        <line class="dim-line" x1="430" y1="60" x2="180" y2="60" />
+        <circle class="dim-dot" cx="432" cy="55" r="2.5"/>
+        <text class="dim-label" x="176" y="48" text-anchor="end">SEPAL WIDTH</text>
+        <text class="dim-value" id="dim-sw" x="176" y="77" text-anchor="end">3.5 cm</text>
+
+        <line class="dim-line" x1="530" y1="150" x2="820" y2="150" />
+        <circle class="dim-dot" cx="512" cy="145" r="2.5"/>
+        <text class="dim-label" x="824" y="142" text-anchor="start">PETAL LENGTH</text>
+        <text class="dim-value" id="dim-pl" x="824" y="165" text-anchor="start">1.4 cm</text>
+
+        <line class="dim-line" x1="565" y1="95" x2="820" y2="95" />
+        <circle class="dim-dot" cx="548" cy="90" r="2.5"/>
+        <text class="dim-label" x="824" y="87" text-anchor="start">PETAL WIDTH</text>
+        <text class="dim-value" id="dim-pw" x="824" y="110" text-anchor="start">0.2 cm</text>
+      </svg>
+    </div>
+
+    <!-- Compact fallback for narrow screens: same live values, no leader-line
+         text that would shrink unreadably at small widths -->
+    <div class="specimen-mobile">
+      <svg class="specimen-mobile-flower" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="translate(100,105)">
+          <path class="iris-outline" d="M0,-6 C-40,10 -78,50 -70,88 C-64,108 -34,110 -14,92 C-2,80 -2,40 0,-6 Z"/>
+          <path class="iris-outline" d="M0,-6 C40,10 78,50 70,88 C64,108 34,110 14,92 C2,80 2,40 0,-6 Z"/>
+          <path class="iris-outline" d="M0,-8 C-22,-40 -18,-78 0,-96 C18,-78 22,-40 0,-8 Z"/>
+          <path class="iris-outline" d="M0,96 L0,150"/>
+        </g>
+      </svg>
+      <div class="specimen-chips">
+        <div class="specimen-chip">
+          <div class="specimen-chip-label">Sepal Length</div>
+          <div class="specimen-chip-value" id="chip-sl">5.1 cm</div>
+        </div>
+        <div class="specimen-chip">
+          <div class="specimen-chip-label">Sepal Width</div>
+          <div class="specimen-chip-value" id="chip-sw">3.5 cm</div>
+        </div>
+        <div class="specimen-chip">
+          <div class="specimen-chip-label">Petal Length</div>
+          <div class="specimen-chip-value" id="chip-pl">1.4 cm</div>
+        </div>
+        <div class="specimen-chip">
+          <div class="specimen-chip-label">Petal Width</div>
+          <div class="specimen-chip-value" id="chip-pw">0.2 cm</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="main">
+
+    <!-- LEFT: PREDICTOR -->
+    <section class="card predictor-card">
+      <div class="card-header">
+        <h2 class="card-title">Flower Measurement Input</h2>
+        <p class="card-sub">Adjust the sliders to enter flower measurements</p>
+      </div>
+
+      <div class="sliders">
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-label">Sepal Length</span>
+            <span class="slider-value" id="val-sl">5.1 cm</span>
+          </div>
+          <div class="slider-track-wrap">
+            <span class="slider-min">4.3</span>
+            <input type="range" class="slider" id="sepal-length"
+              min="4.3" max="7.9" step="0.1" value="5.1">
+            <span class="slider-max">7.9</span>
+          </div>
+          <div class="slider-hint">Range: 4.3 – 7.9 cm</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-label">Sepal Width</span>
+            <span class="slider-value" id="val-sw">3.5 cm</span>
+          </div>
+          <div class="slider-track-wrap">
+            <span class="slider-min">2.0</span>
+            <input type="range" class="slider" id="sepal-width"
+              min="2.0" max="4.4" step="0.1" value="3.5">
+            <span class="slider-max">4.4</span>
+          </div>
+          <div class="slider-hint">Range: 2.0 – 4.4 cm</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-label">Petal Length</span>
+            <span class="slider-value" id="val-pl">1.4 cm</span>
+          </div>
+          <div class="slider-track-wrap">
+            <span class="slider-min">1.0</span>
+            <input type="range" class="slider" id="petal-length"
+              min="1.0" max="6.9" step="0.1" value="1.4">
+            <span class="slider-max">6.9</span>
+          </div>
+          <div class="slider-hint">Range: 1.0 – 6.9 cm</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <span class="slider-label">Petal Width</span>
+            <span class="slider-value" id="val-pw">0.2 cm</span>
+          </div>
+          <div class="slider-track-wrap">
+            <span class="slider-min">0.1</span>
+            <input type="range" class="slider" id="petal-width"
+              min="0.1" max="2.5" step="0.1" value="0.2">
+            <span class="slider-max">2.5</span>
+          </div>
+          <div class="slider-hint">Range: 0.1 – 2.5 cm</div>
+        </div>
+
+      </div>
+
+      <button class="predict-btn" id="predict-btn">
+        <span class="btn-text">Predict Species</span>
+        <span class="btn-icon">→</span>
+      </button>
+
+      <!-- RESULT -->
+      <div class="result-box" id="result-box">
+        <div class="result-tag-label">Classification Result</div>
+        <div class="result-species" id="result-species">—</div>
+        <div class="result-desc" id="result-desc">Set measurements and predict to see the model's classification.</div>
+        <div class="confidence-section">
+          <div class="conf-title">Confidence Breakdown</div>
+          <div class="conf-bars" id="conf-bars"></div>
+        </div>
+      </div>
+
+      <!-- PRESET EXAMPLES -->
+      <div class="presets">
+        <div class="preset-title">Try an example</div>
+        <div class="preset-btns">
+          <button class="preset-btn" data-sl="5.1" data-sw="3.5" data-pl="1.4" data-pw="0.2">
+            Setosa
+          </button>
+          <button class="preset-btn" data-sl="6.0" data-sw="2.9" data-pl="4.5" data-pw="1.5">
+            Versicolor
+          </button>
+          <button class="preset-btn" data-sl="6.7" data-sw="3.1" data-pl="5.6" data-pw="2.4">
+            Virginica
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT: DASHBOARD -->
+    <section class="right-panel">
+
+      <!-- MODEL STATS -->
+      <div class="card stats-card">
+        <div class="card-header">
+          <h2 class="card-title">Model Performance</h2>
+          <p class="card-sub">Held-out test set · 20% split, stratified</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-block">
+            <div class="stat-number">{{ accuracy }}%</div>
+            <div class="stat-label">Accuracy</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">{{ f1 }}</div>
+            <div class="stat-label">F1 Score</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">150</div>
+            <div class="stat-label">Samples</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">K = 5</div>
+            <div class="stat-label">Neighbors</div>
+          </div>
+        </div>
+        <div class="accuracy-bar-wrap">
+          <div class="accuracy-bar-label">
+            <span>Model Accuracy</span>
+            <span>{{ accuracy }}%</span>
+          </div>
+          <div class="accuracy-bar-track">
+            <div class="accuracy-bar-fill" style="width: 0%" data-target="{{ accuracy }}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <span class="plate-number">Chart 1</span>
+          <h2 class="card-title">Confusion Matrix</h2>
+          <p class="card-sub">Rows = actual class, columns = predicted class</p>
+        </div>
+        <div class="chart-frame">
+          <img class="chart-img" src="{{ url_for('static', filename='charts/confusion_matrix.png') }}"
+            alt="Confusion Matrix" loading="lazy">
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="card-header">
+          <span class="plate-number">Chart 2</span>
+          <h2 class="card-title">K vs Accuracy (Elbow Method)</h2>
+          <p class="card-sub">Finding the optimal number of neighbors</p>
+        </div>
+        <div class="chart-frame">
+          <img class="chart-img" src="{{ url_for('static', filename='charts/k_vs_accuracy.png') }}"
+            alt="K vs Accuracy" loading="lazy">
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="card-header">
+          <span class="plate-number">Chart 3</span>
+          <h2 class="card-title">Feature Distribution by Species</h2>
+          <p class="card-sub">How each measurement separates the 3 species</p>
+        </div>
+        <div class="chart-frame">
+          <img class="chart-img" src="{{ url_for('static', filename='charts/feature_distribution.png') }}"
+            alt="Feature Distribution" loading="lazy">
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    DecodeLabs Industrial Training Kit — AI Project 2 · Built by Shaikh Muhammad Zain
+  </footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
