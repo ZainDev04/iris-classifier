@@ -2,6 +2,8 @@
 
 > **DecodeLabs Industrial Training Kit — Artificial Intelligence | Project 2**
 
+🔗 **Live Demo:** [iris-classifier-6zdh.onrender.com](https://iris-classifier-6zdh.onrender.com)
+
 A supervised machine learning pipeline that classifies Iris flowers into 3 species using the K-Nearest Neighbors (KNN) algorithm. This project demonstrates the full ML workflow: data loading, feature scaling, train/test splitting, model training, prediction, and evaluation.
 
 ---
