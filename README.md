@@ -4,7 +4,7 @@
 
 A K-Nearest Neighbors model with a web UI that shows why it answered the way it did.
 
-[![Live demo](https://img.shields.io/badge/live%20demo-vercel.app-82b440?style=flat-square&logo=vercel&logoColor=white)](https://iris-classifier-five.vercel.app/)
+[![Live demo](https://img.shields.io/badge/live%20demo-vercel.app-82b440?style=flat-square&logo=vercel&logoColor=white)](https://iris-knn.vercel.app/)
 [![CI](https://img.shields.io/github/actions/workflow/status/ZainDev04/iris-classifier/ci.yml?branch=main&style=flat-square&label=tests)](https://github.com/ZainDev04/iris-classifier/actions)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776ab?style=flat-square&logo=python&logoColor=white)](#run-it-locally)
 [![Lighthouse](https://img.shields.io/badge/lighthouse-100%20%2F%20100%20%2F%20100%20%2F%20100-82b440?style=flat-square&logo=lighthouse&logoColor=white)](#quality-checks)
@@ -12,7 +12,7 @@ A K-Nearest Neighbors model with a web UI that shows why it answered the way it 
 
 DecodeLabs Industrial Training Kit (Artificial Intelligence), Project 2
 
-[Try it live](https://iris-classifier-five.vercel.app/) | [API](#json-api) | [How the model is built](#how-the-model-is-built) | [Run it locally](#run-it-locally)
+[Try it live](https://iris-knn.vercel.app/) | [API](#json-api) | [How the model is built](#how-the-model-is-built) | [Run it locally](#run-it-locally)
 
 </div>
 
@@ -115,7 +115,7 @@ python -m pytest
 | `GET` | `/api/health` | Liveness probe. |
 
 ```bash
-curl -X POST https://iris-classifier-five.vercel.app/api/predict \
+curl -X POST https://iris-knn.vercel.app/api/predict \
   -H "Content-Type: application/json" \
   -d '{"sepal_length":6.0,"sepal_width":2.9,"petal_length":4.5,"petal_width":1.5}'
 ```
