@@ -79,13 +79,13 @@ Every interactive component defines default, hover, focus-visible, active, disab
 
 ### Button (`.btn`)
 
-Anatomy: label, optional arrow or spinner. Minimum height 44 px, uppercase 14 px bold, 4 px radius. Two variants: `btn-primary` (accent fill, black text, hard shadow) and `btn-ghost` (transparent, strong border).
+Anatomy: label, optional arrow or spinner. Minimum height 44 px, sentence case 14 px bold, 4 px radius. Two variants: `btn-primary` (accent fill, black text, hard shadow) and `btn-ghost` (transparent, strong border), plus a `btn-sm` modifier (40 px, 12 px text) for utilities such as the copy buttons. The mobile menu toggle uses the ghost tokens too, so the page has two button looks plus chips and tabs. Labels are sentence case; uppercase is reserved for micro-labels under about 15 characters (nav links, table heads, stat labels). The predict button is `btn-primary` only while auto-predict is off; with auto-predict on it becomes a ghost button labelled "Run again", because the model already runs on every change.
 
 Hover lifts the button 2 px and deepens the shadow. Active drops it 1 px and removes the shadow. Disabled is 45 % opacity with a `not-allowed` cursor. Loading (`.is-loading`) shows the spinner, sets `aria-busy` and blocks pointer events. Enter and Space activate it. Pointer and touch behave the same. Long labels wrap and are never truncated.
 
 ### Range and number field (`.field`)
 
-Anatomy: label, number input with unit, range slider with min and max bounds, error line. The two inputs stay in sync. The number input is the source of truth for the API call.
+Anatomy: label, number input with unit, range slider with min and max bounds, error line. The two inputs stay in sync. The number input is the source of truth for the API call. Each field has 20 px of padding above and below and only 5 px between the label row and the slider, so a slider groups with its own label rather than the one below it. The label is bottom-aligned with the number box for the same reason.
 
 The range fill is driven by a `--pct` custom property set from JavaScript through the CSSOM, which keeps it CSP-safe. The thumb is 20 px and the hit area 44 px tall. Arrow keys step 0.1; Page Up, Page Down, Home and End work natively. `aria-valuetext` reads "x.x centimetres".
 
@@ -167,7 +167,7 @@ Each item is pass or fail in implementation.
 
 ## 5. Content and tone
 
-Plain sentences. Sentence case everywhere except uppercase micro-labels.
+Plain sentences. Sentence case everywhere, including buttons, the hero eyebrow and block titles, except uppercase micro-labels under about 15 characters. Static code samples in the pipeline cards are plain mono text with an accent rule on the left, never a pill, so they do not read as buttons.
 
 | Do | Don't |
 |---|---|

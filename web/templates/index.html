@@ -435,7 +435,7 @@
           </div>
           <p class="api-copy">Classify a flower. Returns the species, confidence, per-class probabilities and the K nearest training samples.</p>
           <div class="code-wrap">
-            <button class="copy-btn" type="button" data-copy="curl-predict" aria-label="Copy example request">Copy</button>
+            <button class="btn btn-ghost btn-sm copy-btn" type="button" data-copy="curl-predict" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-predict"><code>curl -X POST {{ request.url_root }}api/predict \
   -H "Content-Type: application/json" \
   -d '{"sepal_length":5.1,"sepal_width":3.5,
@@ -450,7 +450,7 @@
           </div>
           <p class="api-copy">Metrics, confusion matrix, per-class report, K curve, feature ranges and species notes.</p>
           <div class="code-wrap">
-            <button class="copy-btn" type="button" data-copy="curl-model" aria-label="Copy example request">Copy</button>
+            <button class="btn btn-ghost btn-sm copy-btn" type="button" data-copy="curl-model" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-model"><code>curl {{ request.url_root }}api/model</code></pre>
           </div>
         </article>
@@ -462,7 +462,7 @@
           </div>
           <p class="api-copy">All 150 raw samples with labels. This is the data behind the scatter plot and histograms.</p>
           <div class="code-wrap">
-            <button class="copy-btn" type="button" data-copy="curl-dataset" aria-label="Copy example request">Copy</button>
+            <button class="btn btn-ghost btn-sm copy-btn" type="button" data-copy="curl-dataset" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-dataset"><code>curl {{ request.url_root }}api/dataset</code></pre>
           </div>
         </article>

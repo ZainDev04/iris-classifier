@@ -363,7 +363,19 @@
       requestPredict(0);
     });
 
+    // While auto-predict is on the model already runs on every change, so the
+    // submit button steps back to a ghost "run again" instead of a primary call to action.
+    const syncPredictButton = () => {
+      const auto = autoPredict.checked;
+      predictBtn.classList.toggle("btn-primary", !auto);
+      predictBtn.classList.toggle("btn-ghost", auto);
+      $(".btn-label", predictBtn).textContent = auto ? "Run again" : "Predict species";
+      predictBtn.title = auto ? "Results already update as you adjust. Click to run once more." : "";
+    };
+    syncPredictButton();
+
     autoPredict.addEventListener("change", () => {
+      syncPredictButton();
       toast(autoPredict.checked ? "Auto-predict on" : "Auto-predict off. Use the button to run the model.");
       if (autoPredict.checked) requestPredict(0);
     });
