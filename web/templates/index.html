@@ -1,301 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iris Classifier — DecodeLabs AI Project 2</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<title>Iris Species Classifier · KNN Demo</title>
+<meta name="description" content="Interactive K-Nearest Neighbors classifier for the Iris dataset. Enter four petal and sepal measurements and get a species prediction with confidence scores, nearest-neighbour explanations and live charts. Built with Flask and scikit-learn.">
+<meta property="og:title" content="Iris Species Classifier · KNN Demo">
+<meta property="og:description" content="Interactive machine-learning demo: classify iris flowers with a K-Nearest Neighbors model, explained with live charts.">
+<meta property="og:type" content="website">
+<link rel="icon" href="{{ static_url('favicon.svg') }}" type="image/svg+xml">
+<link rel="stylesheet" href="{{ static_url('css/style.css') }}">
 </head>
 <body>
 
-<div class="page">
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-row">
-      <div class="header-left">
-        <span class="header-tag">DecodeLabs AI Internship · Project 2</span>
-        <h1 class="header-title">Iris Species Classifier</h1>
-        <p class="header-sub">K-Nearest Neighbors · Supervised Learning · Scikit-learn</p>
+<!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
+<header class="nav" id="top">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="IRIS//KNN — back to top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">IRIS<span class="brand-sep">//</span>KNN</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" id="nav-toggle">
+      <span class="nav-toggle-icon" aria-hidden="true"><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></span>
+      <span class="nav-toggle-label">Menu</span>
+    </button>
+
+    <nav class="nav-menu" id="nav-menu" aria-label="Page sections">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#predict">Predict</a></li>
+        <li><a class="nav-link" href="#performance">Performance</a></li>
+        <li><a class="nav-link" href="#pipeline">Pipeline</a></li>
+        <li><a class="nav-link" href="#api">API</a></li>
+        <li><a class="nav-link nav-link-ext" href="{{ github_url }}" target="_blank" rel="noopener noreferrer">GitHub<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="main">
+
+  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <p class="eyebrow reveal">
+        <span class="eyebrow-dot" aria-hidden="true"></span>
+        DecodeLabs AI Internship · Project 02 · Supervised Learning
+      </p>
+
+      <h1 class="hero-title glitch reveal" id="hero-title" data-text="Iris Species Classifier">Iris Species Classifier</h1>
+
+      <p class="lede reveal">
+        A K-Nearest Neighbors model trained on the classic Iris dataset.
+        Give it four measurements and it returns a species, a confidence score,
+        and the exact neighbours that cast the vote.
+      </p>
+
+      <div class="hero-actions reveal">
+        <a class="btn btn-primary" href="#predict">
+          Run a prediction
+          <span class="btn-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="btn btn-ghost" href="{{ github_url }}" target="_blank" rel="noopener noreferrer">
+          View source<span class="visually-hidden"> on GitHub (opens in a new tab)</span>
+        </a>
       </div>
-      <div class="stat-pills">
-        <div class="pill">
-          <span class="pill-label">Accuracy</span>
-          <span class="pill-value">{{ accuracy }}%</span>
+
+      <dl class="stat-strip reveal" aria-label="Model summary">
+        <div class="stat">
+          <dt>Test accuracy</dt>
+          <dd><span class="count" data-target="{{ metrics.accuracy }}" data-decimals="2">{{ "%.2f"|format(metrics.accuracy) }}</span><span class="unit">%</span></dd>
         </div>
-        <div class="pill">
-          <span class="pill-label">F1 Score</span>
-          <span class="pill-value">{{ f1 }}</span>
+        <div class="stat">
+          <dt>F1 (weighted)</dt>
+          <dd><span class="count" data-target="{{ metrics.f1_weighted }}" data-decimals="4">{{ metrics.f1_weighted }}</span></dd>
         </div>
-        <div class="pill">
-          <span class="pill-label">Algorithm</span>
-          <span class="pill-value">KNN · K=5</span>
+        <div class="stat">
+          <dt>5-fold CV</dt>
+          <dd><span class="count" data-target="{{ metrics.cv_accuracy_mean }}" data-decimals="2">{{ "%.2f"|format(metrics.cv_accuracy_mean) }}</span><span class="unit">%</span></dd>
         </div>
-        <div class="pill">
-          <span class="pill-label">Dataset</span>
-          <span class="pill-value">150 samples</span>
+        <div class="stat">
+          <dt>Samples</dt>
+          <dd><span class="count" data-target="{{ metrics.total_samples }}" data-decimals="0">{{ metrics.total_samples }}</span></dd>
         </div>
+        <div class="stat">
+          <dt>Neighbours</dt>
+          <dd>K<span class="unit">=</span><span class="count" data-target="{{ metrics.k }}" data-decimals="0">{{ metrics.k }}</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ PREDICT ═══════════════════════════════ -->
+  <section class="section" id="predict" aria-labelledby="predict-title">
+    <div class="container">
+      <header class="section-head reveal">
+        <p class="section-index" aria-hidden="true">01</p>
+        <h2 class="section-title" id="predict-title">Predict a species</h2>
+        <p class="section-sub">
+          Drag the sliders or type exact values. Predictions run live as you move,
+          or turn auto-predict off and submit manually.
+        </p>
+      </header>
+
+      <div class="predict-grid">
+
+        <!-- ── input panel ── -->
+        <form class="panel panel-form reveal" id="predict-form" novalidate aria-describedby="form-hint">
+          <fieldset class="fieldset">
+            <legend class="legend">Measurements <span class="legend-unit">centimetres</span></legend>
+            <p class="hint" id="form-hint">Each range matches the min–max of the training data.</p>
+
+            {% for f in features %}
+            <div class="field" data-key="{{ f.key }}">
+              <div class="field-row">
+                <label class="field-label" for="{{ f.key }}">{{ f.label }}</label>
+                <div class="field-number-wrap">
+                  <input class="field-number" type="number" id="{{ f.key }}-number"
+                         name="{{ f.key }}" min="{{ f.min }}" max="{{ f.max }}" step="{{ f.step }}"
+                         inputmode="decimal" aria-label="{{ f.label }}, exact value in centimetres"
+                         value="{{ [5.1, 3.5, 1.4, 0.2][loop.index0] }}">
+                  <span class="field-unit" aria-hidden="true">cm</span>
+                </div>
+              </div>
+              <div class="field-range-wrap">
+                <span class="field-bound" aria-hidden="true">{{ f.min }}</span>
+                <input class="field-range" type="range" id="{{ f.key }}"
+                       min="{{ f.min }}" max="{{ f.max }}" step="{{ f.step }}"
+                       value="{{ [5.1, 3.5, 1.4, 0.2][loop.index0] }}"
+                       aria-valuetext="{{ [5.1, 3.5, 1.4, 0.2][loop.index0] }} centimetres">
+                <span class="field-bound" aria-hidden="true">{{ f.max }}</span>
+              </div>
+              <p class="field-error" id="{{ f.key }}-error" role="alert" hidden></p>
+            </div>
+            {% endfor %}
+          </fieldset>
+
+          <div class="presets" role="group" aria-labelledby="presets-label">
+            <p class="presets-label" id="presets-label">Load a typical example</p>
+            <div class="preset-row">
+              <button class="chip" type="button" data-preset="5.1,3.5,1.4,0.2" data-species="setosa">
+                <span class="chip-dot dot-setosa" aria-hidden="true"></span>Setosa
+              </button>
+              <button class="chip" type="button" data-preset="6.0,2.9,4.5,1.5" data-species="versicolor">
+                <span class="chip-dot dot-versicolor" aria-hidden="true"></span>Versicolor
+              </button>
+              <button class="chip" type="button" data-preset="6.7,3.1,5.6,2.4" data-species="virginica">
+                <span class="chip-dot dot-virginica" aria-hidden="true"></span>Virginica
+              </button>
+              <button class="chip chip-random" type="button" id="preset-random">
+                <span aria-hidden="true">⟳</span> Random sample
+              </button>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <label class="switch">
+              <input type="checkbox" id="auto-predict" checked>
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+              <span class="switch-label">Auto-predict while adjusting</span>
+            </label>
+
+            <button class="btn btn-primary btn-block" type="submit" id="predict-btn">
+              <span class="btn-label">Predict species</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+
+        <!-- ── result panel ── -->
+        <div class="panel panel-result reveal" id="result" data-state="empty">
+          <div class="result-status visually-hidden" role="status" aria-live="polite" aria-atomic="true" id="result-live"></div>
+
+          <div class="result-empty" data-view="empty">
+            <div class="empty-glyph" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <p class="empty-title">Awaiting measurements</p>
+            <p class="empty-copy">Adjust any slider or pick an example to run the model.</p>
+          </div>
+
+          <div class="result-error" data-view="error" hidden>
+            <p class="error-title">Prediction failed</p>
+            <p class="error-copy" id="error-copy"></p>
+            <button class="btn btn-ghost" type="button" id="error-retry">Try again</button>
+          </div>
+
+          <div class="result-body" data-view="result" hidden>
+            <div class="result-head">
+              <div>
+                <p class="result-kicker">Predicted species</p>
+                <p class="result-name glitch-flash" id="result-name" data-text=""></p>
+                <p class="result-summary" id="result-summary"></p>
+              </div>
+              <div class="ring" role="img" id="ring" aria-label="">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+                  <circle class="ring-fill" cx="60" cy="60" r="52" id="ring-fill"></circle>
+                </svg>
+                <div class="ring-text">
+                  <span class="ring-value" id="ring-value">0</span><span class="ring-unit">%</span>
+                  <span class="ring-label">confidence</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="warnings" id="warnings" hidden></div>
+
+            <div class="prob-block">
+              <h3 class="block-title">Class probabilities</h3>
+              <ul class="prob-list" id="prob-list" aria-label="Probability per species"></ul>
+            </div>
+
+            <div class="neighbors-block">
+              <h3 class="block-title">The <span id="k-label">{{ metrics.k }}</span> nearest neighbours <span class="block-note" id="vote-note"></span></h3>
+              <div class="table-scroll">
+                <table class="table" id="neighbors-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Species</th>
+                      <th scope="col">Distance</th>
+                      <th scope="col">Sepal L×W</th>
+                      <th scope="col">Petal L×W</th>
+                    </tr>
+                  </thead>
+                  <tbody id="neighbors-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <p class="result-detail" id="result-detail"></p>
+          </div>
+        </div>
+
+        <!-- ── scatter panel ── -->
+        <div class="panel panel-scatter reveal">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Feature space</h3>
+              <p class="panel-sub">All 150 training samples. Your flower is the outlined point.</p>
+            </div>
+            <div class="axis-controls">
+              <label class="select-wrap">
+                <span class="select-label">X</span>
+                <select class="select" id="scatter-x" aria-label="X axis feature">
+                  {% for f in features %}<option value="{{ loop.index0 }}" {% if loop.index0 == 2 %}selected{% endif %}>{{ f.label }}</option>{% endfor %}
+                </select>
+              </label>
+              <label class="select-wrap">
+                <span class="select-label">Y</span>
+                <select class="select" id="scatter-y" aria-label="Y axis feature">
+                  {% for f in features %}<option value="{{ loop.index0 }}" {% if loop.index0 == 3 %}selected{% endif %}>{{ f.label }}</option>{% endfor %}
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="chart chart-scatter" id="scatter" role="img" aria-label="Scatter plot of the Iris dataset coloured by species, with the current input highlighted."></div>
+          <ul class="legend" aria-label="Legend">
+            {% for s in species %}<li><span class="legend-swatch dot-{{ s }}" aria-hidden="true"></span>{{ s }}</li>{% endfor %}
+            <li><span class="legend-swatch legend-query" aria-hidden="true"></span>your input</li>
+          </ul>
+        </div>
+
       </div>
     </div>
+  </section>
 
-    <!-- SPECIMEN DIAGRAM: annotated iris with live dimension read-outs (desktop/tablet) -->
-    <div class="specimen-diagram">
-      <svg viewBox="0 0 1000 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of an iris flower with live measurement values">
-        <g transform="translate(500,105)">
-          <path class="iris-outline" d="M0,-6 C-40,10 -78,50 -70,88 C-64,108 -34,110 -14,92 C-2,80 -2,40 0,-6 Z"/>
-          <path class="iris-outline" d="M0,-6 C40,10 78,50 70,88 C64,108 34,110 14,92 C2,80 2,40 0,-6 Z"/>
-          <path class="iris-vein" d="M0,-2 C-8,30 -18,60 -34,84"/>
-          <path class="iris-vein" d="M0,-2 C8,30 18,60 34,84"/>
-          <path class="iris-outline" d="M0,-8 C-22,-40 -18,-78 0,-96 C18,-78 22,-40 0,-8 Z"/>
-          <path class="iris-vein" d="M0,-10 L0,-90"/>
-          <path class="iris-outline" d="M0,96 L0,150"/>
-        </g>
+  <!-- ═══════════════════════════════ PERFORMANCE ═══════════════════════════════ -->
+  <section class="section section-alt" id="performance" aria-labelledby="performance-title">
+    <div class="container">
+      <header class="section-head reveal">
+        <p class="section-index" aria-hidden="true">02</p>
+        <h2 class="section-title" id="performance-title">Model performance</h2>
+        <p class="section-sub">
+          Evaluated on a held-out 20&nbsp;% test split ({{ metrics.test_samples }} samples) and
+          cross-validated on all {{ metrics.total_samples }}. Every chart below is rendered from the live model.
+        </p>
+      </header>
 
-        <line class="dim-line" x1="500" y1="15" x2="500" y2="0" />
-        <line class="dim-line" x1="500" y1="0" x2="180" y2="0" />
-        <circle class="dim-dot" cx="500" cy="15" r="2.5"/>
-        <text class="dim-label" x="176" y="-6" text-anchor="end">SEPAL LENGTH</text>
-        <text class="dim-value" id="dim-sl" x="176" y="17" text-anchor="end">5.1 cm</text>
+      <div class="perf-grid">
 
-        <line class="dim-line" x1="430" y1="60" x2="180" y2="60" />
-        <circle class="dim-dot" cx="432" cy="55" r="2.5"/>
-        <text class="dim-label" x="176" y="48" text-anchor="end">SEPAL WIDTH</text>
-        <text class="dim-value" id="dim-sw" x="176" y="77" text-anchor="end">3.5 cm</text>
+        <div class="panel reveal">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Confusion matrix</h3>
+              <p class="panel-sub">Rows are the true class; columns are the prediction.</p>
+            </div>
+          </div>
+          <div class="cm" id="confusion-matrix" role="table" aria-label="Confusion matrix"></div>
+          <p class="cm-caption">rows = true class · columns = predicted class</p>
+        </div>
 
-        <line class="dim-line" x1="530" y1="150" x2="820" y2="150" />
-        <circle class="dim-dot" cx="512" cy="145" r="2.5"/>
-        <text class="dim-label" x="824" y="142" text-anchor="start">PETAL LENGTH</text>
-        <text class="dim-value" id="dim-pl" x="824" y="165" text-anchor="start">1.4 cm</text>
+        <div class="panel reveal">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Per-class report</h3>
+              <p class="panel-sub">Precision, recall and F1 on the test split.</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="table table-report">
+              <thead>
+                <tr>
+                  <th scope="col">Species</th>
+                  <th scope="col">Precision</th>
+                  <th scope="col">Recall</th>
+                  <th scope="col">F1</th>
+                  <th scope="col">Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in metrics.per_class %}
+                <tr>
+                  <th scope="row"><span class="legend-swatch dot-{{ row.species }}" aria-hidden="true"></span>{{ row.species }}</th>
+                  <td class="num">{{ "%.2f"|format(row.precision) }}</td>
+                  <td class="num">{{ "%.2f"|format(row.recall) }}</td>
+                  <td class="num">{{ "%.2f"|format(row.f1) }}</td>
+                  <td class="num">{{ row.support }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <dl class="mini-stats">
+            <div><dt>Train / test</dt><dd>{{ metrics.train_samples }} / {{ metrics.test_samples }}</dd></div>
+            <div><dt>CV accuracy</dt><dd>{{ metrics.cv_accuracy_mean }}&nbsp;% ± {{ metrics.cv_accuracy_std }}</dd></div>
+            <div><dt>Scaling</dt><dd>StandardScaler</dd></div>
+          </dl>
+        </div>
 
-        <line class="dim-line" x1="565" y1="95" x2="820" y2="95" />
-        <circle class="dim-dot" cx="548" cy="90" r="2.5"/>
-        <text class="dim-label" x="824" y="87" text-anchor="start">PETAL WIDTH</text>
-        <text class="dim-value" id="dim-pw" x="824" y="110" text-anchor="start">0.2 cm</text>
-      </svg>
+        <div class="panel panel-wide reveal">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Choosing K — the elbow curve</h3>
+              <p class="panel-sub">Test accuracy for K = 1…20. The chosen K = {{ metrics.k }} balances accuracy against over-fitting to individual points.</p>
+            </div>
+          </div>
+          <div class="chart chart-line" id="k-curve" role="img" aria-label="Line chart of test accuracy for K values 1 to 20."></div>
+        </div>
+
+        <div class="panel panel-wide reveal">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Feature distribution by species</h3>
+              <p class="panel-sub">Petal measurements separate the classes far better than sepal measurements.</p>
+            </div>
+            <div class="tabs" role="tablist" aria-label="Feature" id="hist-tabs">
+              {% for f in features %}
+              <button class="tab" role="tab" type="button" id="tab-{{ f.key }}" aria-selected="{{ 'true' if loop.index0 == 2 else 'false' }}" aria-controls="hist-panel" data-index="{{ loop.index0 }}" tabindex="{{ '0' if loop.index0 == 2 else '-1' }}">{{ f.label }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="chart chart-hist" id="hist-panel" role="tabpanel" aria-labelledby="tab-petal_length"></div>
+          <ul class="legend" aria-label="Legend">
+            {% for s in species %}<li><span class="legend-swatch dot-{{ s }}" aria-hidden="true"></span>{{ s }}</li>{% endfor %}
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ PIPELINE ═══════════════════════════════ -->
+  <section class="section" id="pipeline" aria-labelledby="pipeline-title">
+    <div class="container">
+      <header class="section-head reveal">
+        <p class="section-index" aria-hidden="true">03</p>
+        <h2 class="section-title" id="pipeline-title">How the model is built</h2>
+        <p class="section-sub">The full supervised-learning workflow, from raw data to a validated prediction.</p>
+      </header>
+
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3 class="step-title">Load</h3>
+          <p class="step-copy">150 iris samples from scikit-learn: 4 numeric features and 3 balanced classes of 50.</p>
+          <code class="step-code">load_iris()</code>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3 class="step-title">Scale</h3>
+          <p class="step-copy">Z-score every feature so petal width (0.1–2.5 cm) counts as much as sepal length (4.3–7.9 cm) in the distance.</p>
+          <code class="step-code">StandardScaler()</code>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3 class="step-title">Split</h3>
+          <p class="step-copy">80 / 20 stratified split with a fixed seed so every run is reproducible and each class appears in both sets.</p>
+          <code class="step-code">train_test_split(stratify=y)</code>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">4</span>
+          <h3 class="step-title">Train</h3>
+          <p class="step-copy">KNN has no training phase in the usual sense — it stores the scaled points and defers work to prediction time.</p>
+          <code class="step-code">KNeighborsClassifier(n_neighbors=5)</code>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">5</span>
+          <h3 class="step-title">Evaluate</h3>
+          <p class="step-copy">Accuracy, weighted F1, a confusion matrix and 5-fold cross-validation guard against a lucky split.</p>
+          <code class="step-code">cross_val_score(cv=5)</code>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">6</span>
+          <h3 class="step-title">Serve</h3>
+          <p class="step-copy">A Flask API exposes predictions, probabilities and the neighbours that voted — so results are explainable, not a black box.</p>
+          <code class="step-code">POST /api/predict</code>
+        </li>
+      </ol>
     </div>
+  </section>
 
-    <!-- Compact fallback for narrow screens: same live values, no leader-line
-         text that would shrink unreadably at small widths -->
-    <div class="specimen-mobile">
-      <svg class="specimen-mobile-flower" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <g transform="translate(100,105)">
-          <path class="iris-outline" d="M0,-6 C-40,10 -78,50 -70,88 C-64,108 -34,110 -14,92 C-2,80 -2,40 0,-6 Z"/>
-          <path class="iris-outline" d="M0,-6 C40,10 78,50 70,88 C64,108 34,110 14,92 C2,80 2,40 0,-6 Z"/>
-          <path class="iris-outline" d="M0,-8 C-22,-40 -18,-78 0,-96 C18,-78 22,-40 0,-8 Z"/>
-          <path class="iris-outline" d="M0,96 L0,150"/>
-        </g>
-      </svg>
-      <div class="specimen-chips">
-        <div class="specimen-chip">
-          <div class="specimen-chip-label">Sepal Length</div>
-          <div class="specimen-chip-value" id="chip-sl">5.1 cm</div>
-        </div>
-        <div class="specimen-chip">
-          <div class="specimen-chip-label">Sepal Width</div>
-          <div class="specimen-chip-value" id="chip-sw">3.5 cm</div>
-        </div>
-        <div class="specimen-chip">
-          <div class="specimen-chip-label">Petal Length</div>
-          <div class="specimen-chip-value" id="chip-pl">1.4 cm</div>
-        </div>
-        <div class="specimen-chip">
-          <div class="specimen-chip-label">Petal Width</div>
-          <div class="specimen-chip-value" id="chip-pw">0.2 cm</div>
-        </div>
+  <!-- ═══════════════════════════════ API ═══════════════════════════════ -->
+  <section class="section section-alt" id="api" aria-labelledby="api-title">
+    <div class="container">
+      <header class="section-head reveal">
+        <p class="section-index" aria-hidden="true">04</p>
+        <h2 class="section-title" id="api-title">JSON API</h2>
+        <p class="section-sub">Everything on this page is driven by three public endpoints. No keys required.</p>
+      </header>
+
+      <div class="api-grid">
+        <article class="panel api-card reveal">
+          <div class="api-head">
+            <span class="method method-post">POST</span>
+            <code class="api-path">/api/predict</code>
+          </div>
+          <p class="api-copy">Classify a flower. Returns species, confidence, per-class probabilities and the K nearest training samples.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" type="button" data-copy="curl-predict" aria-label="Copy example request">Copy</button>
+<pre class="code" id="curl-predict"><code>curl -X POST {{ request.url_root }}api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"sepal_length":5.1,"sepal_width":3.5,
+       "petal_length":1.4,"petal_width":0.2}'</code></pre>
+          </div>
+        </article>
+
+        <article class="panel api-card reveal">
+          <div class="api-head">
+            <span class="method method-get">GET</span>
+            <code class="api-path">/api/model</code>
+          </div>
+          <p class="api-copy">Model card: metrics, confusion matrix, per-class report, K-curve, feature ranges and species metadata.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" type="button" data-copy="curl-model" aria-label="Copy example request">Copy</button>
+<pre class="code" id="curl-model"><code>curl {{ request.url_root }}api/model</code></pre>
+          </div>
+        </article>
+
+        <article class="panel api-card reveal">
+          <div class="api-head">
+            <span class="method method-get">GET</span>
+            <code class="api-path">/api/dataset</code>
+          </div>
+          <p class="api-copy">All 150 raw samples with labels — the data behind the scatter plot and histograms.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" type="button" data-copy="curl-dataset" aria-label="Copy example request">Copy</button>
+<pre class="code" id="curl-dataset"><code>curl {{ request.url_root }}api/dataset</code></pre>
+          </div>
+        </article>
       </div>
     </div>
-  </header>
+  </section>
 
-  <!-- MAIN LAYOUT -->
-  <main class="main">
+</main>
 
-    <!-- LEFT: PREDICTOR -->
-    <section class="card predictor-card">
-      <div class="card-header">
-        <h2 class="card-title">Flower Measurement Input</h2>
-        <p class="card-sub">Adjust the sliders to enter flower measurements</p>
-      </div>
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand">IRIS<span class="brand-sep">//</span>KNN <span class="footer-version">v{{ version }}</span></p>
+      <p class="footer-copy">Built by <strong>Shaikh Muhammad Zain</strong> · AI Intern, DecodeLabs · NED University</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="{{ github_url }}" target="_blank" rel="noopener noreferrer">Source code<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      <li><a href="https://scikit-learn.org/stable/modules/neighbors.html" target="_blank" rel="noopener noreferrer">KNN docs<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+      <li><a href="https://archive.ics.uci.edu/dataset/53/iris" target="_blank" rel="noopener noreferrer">Iris dataset<span class="visually-hidden"> (opens in a new tab)</span></a></li>
+    </ul>
+  </div>
+</footer>
 
-      <div class="sliders">
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
-        <div class="slider-group">
-          <div class="slider-label-row">
-            <span class="slider-label">Sepal Length</span>
-            <span class="slider-value" id="val-sl">5.1 cm</span>
-          </div>
-          <div class="slider-track-wrap">
-            <span class="slider-min">4.3</span>
-            <input type="range" class="slider" id="sepal-length"
-              min="4.3" max="7.9" step="0.1" value="5.1">
-            <span class="slider-max">7.9</span>
-          </div>
-          <div class="slider-hint">Range: 4.3 – 7.9 cm</div>
-        </div>
-
-        <div class="slider-group">
-          <div class="slider-label-row">
-            <span class="slider-label">Sepal Width</span>
-            <span class="slider-value" id="val-sw">3.5 cm</span>
-          </div>
-          <div class="slider-track-wrap">
-            <span class="slider-min">2.0</span>
-            <input type="range" class="slider" id="sepal-width"
-              min="2.0" max="4.4" step="0.1" value="3.5">
-            <span class="slider-max">4.4</span>
-          </div>
-          <div class="slider-hint">Range: 2.0 – 4.4 cm</div>
-        </div>
-
-        <div class="slider-group">
-          <div class="slider-label-row">
-            <span class="slider-label">Petal Length</span>
-            <span class="slider-value" id="val-pl">1.4 cm</span>
-          </div>
-          <div class="slider-track-wrap">
-            <span class="slider-min">1.0</span>
-            <input type="range" class="slider" id="petal-length"
-              min="1.0" max="6.9" step="0.1" value="1.4">
-            <span class="slider-max">6.9</span>
-          </div>
-          <div class="slider-hint">Range: 1.0 – 6.9 cm</div>
-        </div>
-
-        <div class="slider-group">
-          <div class="slider-label-row">
-            <span class="slider-label">Petal Width</span>
-            <span class="slider-value" id="val-pw">0.2 cm</span>
-          </div>
-          <div class="slider-track-wrap">
-            <span class="slider-min">0.1</span>
-            <input type="range" class="slider" id="petal-width"
-              min="0.1" max="2.5" step="0.1" value="0.2">
-            <span class="slider-max">2.5</span>
-          </div>
-          <div class="slider-hint">Range: 0.1 – 2.5 cm</div>
-        </div>
-
-      </div>
-
-      <button class="predict-btn" id="predict-btn">
-        <span class="btn-text">Predict Species</span>
-        <span class="btn-icon">→</span>
-      </button>
-
-      <!-- RESULT -->
-      <div class="result-box" id="result-box">
-        <div class="result-tag-label">Classification Result</div>
-        <div class="result-species" id="result-species">—</div>
-        <div class="result-desc" id="result-desc">Set measurements and predict to see the model's classification.</div>
-        <div class="confidence-section">
-          <div class="conf-title">Confidence Breakdown</div>
-          <div class="conf-bars" id="conf-bars"></div>
-        </div>
-      </div>
-
-      <!-- PRESET EXAMPLES -->
-      <div class="presets">
-        <div class="preset-title">Try an example</div>
-        <div class="preset-btns">
-          <button class="preset-btn" data-sl="5.1" data-sw="3.5" data-pl="1.4" data-pw="0.2">
-            Setosa
-          </button>
-          <button class="preset-btn" data-sl="6.0" data-sw="2.9" data-pl="4.5" data-pw="1.5">
-            Versicolor
-          </button>
-          <button class="preset-btn" data-sl="6.7" data-sw="3.1" data-pl="5.6" data-pw="2.4">
-            Virginica
-          </button>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- RIGHT: DASHBOARD -->
-    <section class="right-panel">
-
-      <!-- MODEL STATS -->
-      <div class="card stats-card">
-        <div class="card-header">
-          <h2 class="card-title">Model Performance</h2>
-          <p class="card-sub">Held-out test set · 20% split, stratified</p>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-block">
-            <div class="stat-number">{{ accuracy }}%</div>
-            <div class="stat-label">Accuracy</div>
-          </div>
-          <div class="stat-block">
-            <div class="stat-number">{{ f1 }}</div>
-            <div class="stat-label">F1 Score</div>
-          </div>
-          <div class="stat-block">
-            <div class="stat-number">150</div>
-            <div class="stat-label">Samples</div>
-          </div>
-          <div class="stat-block">
-            <div class="stat-number">K = 5</div>
-            <div class="stat-label">Neighbors</div>
-          </div>
-        </div>
-        <div class="accuracy-bar-wrap">
-          <div class="accuracy-bar-label">
-            <span>Model Accuracy</span>
-            <span>{{ accuracy }}%</span>
-          </div>
-          <div class="accuracy-bar-track">
-            <div class="accuracy-bar-fill" style="width: 0%" data-target="{{ accuracy }}"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CHARTS -->
-      <div class="card chart-card">
-        <div class="card-header">
-          <span class="plate-number">Chart 1</span>
-          <h2 class="card-title">Confusion Matrix</h2>
-          <p class="card-sub">Rows = actual class, columns = predicted class</p>
-        </div>
-        <div class="chart-frame">
-          <img class="chart-img" src="{{ url_for('static', filename='charts/confusion_matrix.png') }}"
-            alt="Confusion Matrix" loading="lazy">
-        </div>
-      </div>
-
-      <div class="card chart-card">
-        <div class="card-header">
-          <span class="plate-number">Chart 2</span>
-          <h2 class="card-title">K vs Accuracy (Elbow Method)</h2>
-          <p class="card-sub">Finding the optimal number of neighbors</p>
-        </div>
-        <div class="chart-frame">
-          <img class="chart-img" src="{{ url_for('static', filename='charts/k_vs_accuracy.png') }}"
-            alt="K vs Accuracy" loading="lazy">
-        </div>
-      </div>
-
-      <div class="card chart-card">
-        <div class="card-header">
-          <span class="plate-number">Chart 3</span>
-          <h2 class="card-title">Feature Distribution by Species</h2>
-          <p class="card-sub">How each measurement separates the 3 species</p>
-        </div>
-        <div class="chart-frame">
-          <img class="chart-img" src="{{ url_for('static', filename='charts/feature_distribution.png') }}"
-            alt="Feature Distribution" loading="lazy">
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    DecodeLabs Industrial Training Kit — AI Project 2 · Built by Shaikh Muhammad Zain
-  </footer>
-
-</div>
-
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ static_url('js/app.js') }}" defer></script>
 </body>
 </html>
