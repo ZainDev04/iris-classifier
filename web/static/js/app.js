@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Iris // KNN — front-end controller
+   Iris // KNN front-end controller
    Vanilla JS, no dependencies. Everything below is CSP-safe (no inline code).
    ========================================================================== */
 (() => {
@@ -27,7 +27,7 @@
     controller: null,
   };
 
-  /* ── helpers ───────────────────────────────────────────────────────────── */
+  /* --- helpers --- */
 
   function svg(tag, attrs = {}, parent = null) {
     const el = document.createElementNS(SVG_NS, tag);
@@ -69,7 +69,7 @@
     return ticks;
   }
 
-  /* ── toast ─────────────────────────────────────────────────────────────── */
+  /* --- toast --- */
 
   const toastEl = $("#toast");
   let toastTimer;
@@ -81,7 +81,7 @@
     toastTimer = setTimeout(() => (toastEl.hidden = true), 2600);
   }
 
-  /* ── tooltip ───────────────────────────────────────────────────────────── */
+  /* --- tooltip --- */
 
   const tooltipEl = $("#tooltip");
   function showTooltip(html, x, y) {
@@ -101,7 +101,7 @@
   }
   const ttRow = (k, v) => `<div class="tt-row"><span class="tt-k">${k}</span><span>${v}</span></div>`;
 
-  /* ── navigation ────────────────────────────────────────────────────────── */
+  /* --- navigation --- */
 
   function initNav() {
     const toggle = $("#nav-toggle");
@@ -125,7 +125,7 @@
     });
   }
 
-  /* ── reveal on scroll ──────────────────────────────────────────────────── */
+  /* --- reveal on scroll --- */
 
   function initReveal() {
     const items = $$(".reveal");
@@ -147,7 +147,7 @@
     items.forEach((i) => io.observe(i));
   }
 
-  /* ── count-up numbers ──────────────────────────────────────────────────── */
+  /* --- count-up numbers --- */
 
   function initCountUp() {
     const nodes = $$(".count");
@@ -168,7 +168,7 @@
     });
   }
 
-  /* ── form: sliders + number inputs ─────────────────────────────────────── */
+  /* --- form: sliders + number inputs --- */
 
   const form = $("#predict-form");
   const predictBtn = $("#predict-btn");
@@ -273,12 +273,12 @@
     });
 
     autoPredict.addEventListener("change", () => {
-      toast(autoPredict.checked ? "Auto-predict on" : "Auto-predict off — use the button");
+      toast(autoPredict.checked ? "Auto-predict on" : "Auto-predict off. Use the button to run the model.");
       if (autoPredict.checked) requestPredict(0);
     });
   }
 
-  /* ── presets ───────────────────────────────────────────────────────────── */
+  /* --- presets --- */
 
   function clearActiveChip() {
     $$(".chip.is-active").forEach((c) => c.classList.remove("is-active"));
@@ -302,7 +302,7 @@
     });
   }
 
-  /* ── prediction ────────────────────────────────────────────────────────── */
+  /* --- prediction --- */
 
   const resultPanel = $("#result");
   const views = {
@@ -433,7 +433,7 @@
       body.appendChild(tr);
     });
     const votes = data.votes[data.species];
-    $("#vote-note").textContent = `— ${votes} of ${data.neighbors.length} voted ${data.species}`;
+    $("#vote-note").textContent = `(${votes} of ${data.neighbors.length} voted ${data.species})`;
 
     showView("result");
     live.textContent = `Predicted ${data.label} with ${data.confidence}% confidence.`;
@@ -442,7 +442,7 @@
 
   $("#error-retry").addEventListener("click", () => requestPredict(0));
 
-  /* ── scatter plot ──────────────────────────────────────────────────────── */
+  /* --- scatter plot --- */
 
   const scatterEl = $("#scatter");
   const scatterX = $("#scatter-x");
@@ -551,7 +551,7 @@
     );
   }
 
-  /* ── confusion matrix ──────────────────────────────────────────────────── */
+  /* --- confusion matrix --- */
 
   function renderConfusion() {
     const cm = state.model.metrics.confusion_matrix;
@@ -584,7 +584,7 @@
     });
   }
 
-  /* ── K-curve line chart ────────────────────────────────────────────────── */
+  /* --- K-curve line chart --- */
 
   function renderKCurve() {
     const kc = state.model.k_curve;
@@ -673,7 +673,7 @@
     });
   }
 
-  /* ── histogram with tabs ───────────────────────────────────────────────── */
+  /* --- histogram with tabs --- */
 
   function renderHistogram() {
     if (!state.dataset) return;
@@ -747,7 +747,7 @@
         }, root);
         const show = (e) => showTooltip(
           `<strong>${cap(s)}</strong>` +
-          ttRow(feat.label, `${fmt(lo + b * width)}–${fmt(lo + (b + 1) * width)} cm`) +
+          ttRow(feat.label, `${fmt(lo + b * width)} to ${fmt(lo + (b + 1) * width)} cm`) +
           ttRow("Samples", c),
           e.clientX, e.clientY
         );
@@ -792,7 +792,7 @@
     });
   }
 
-  /* ── copy buttons ──────────────────────────────────────────────────────── */
+  /* --- copy buttons --- */
 
   function initCopy() {
     $$(".copy-btn").forEach((btn) => {
@@ -808,13 +808,13 @@
             btn.textContent = "Copy";
           }, 1600);
         } catch {
-          toast("Clipboard unavailable — select the text to copy it", true);
+          toast("Clipboard unavailable. Select the text to copy it.", true);
         }
       });
     });
   }
 
-  /* ── data loading ──────────────────────────────────────────────────────── */
+  /* --- data loading --- */
 
   async function loadData() {
     try {
@@ -834,7 +834,7 @@
     }
   }
 
-  /* ── boot ──────────────────────────────────────────────────────────────── */
+  /* --- boot --- */
 
   document.documentElement.classList.remove("no-js");
   initNav();

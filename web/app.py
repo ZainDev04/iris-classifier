@@ -1,5 +1,5 @@
 """
-Iris Classifier — Flask web application.
+Iris Classifier, Flask web application.
 
 DecodeLabs | AI Internship Project 2
 
@@ -20,12 +20,17 @@ from __future__ import annotations
 
 import hashlib
 import os
+import sys
 from datetime import timedelta
 
 from flask import Flask, Response, jsonify, render_template, request, url_for
 from werkzeug.exceptions import HTTPException
 
-from model import MODEL, ValidationError
+# Serverless hosts import this file from the repository root, so make sure the
+# sibling model module is importable no matter where the process started.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from model import MODEL, ValidationError  # noqa: E402
 
 APP_VERSION = "2.0.0"
 GITHUB_URL = "https://github.com/ZainDev04/iris-classifier"
@@ -53,7 +58,7 @@ def inject_helpers() -> dict:
     return {"static_url": static_url}
 
 
-# ── security / caching headers ────────────────────────────────────────────────
+# --- security / caching headers ---
 
 CSP = (
     "default-src 'self'; "
@@ -85,7 +90,7 @@ def set_headers(response: Response) -> Response:
     return response
 
 
-# ── pages ─────────────────────────────────────────────────────────────────────
+# --- pages ---
 
 @app.route("/")
 def home() -> str:
@@ -105,7 +110,7 @@ def robots() -> Response:
     return Response("User-agent: *\nAllow: /\n", mimetype="text/plain")
 
 
-# ── API ───────────────────────────────────────────────────────────────────────
+# --- API ---
 
 @app.route("/api/predict", methods=["POST"])
 def api_predict() -> Response:
@@ -134,7 +139,7 @@ def api_health() -> Response:
     return jsonify({"status": "ok", "version": APP_VERSION, "k": MODEL.k})
 
 
-# ── legacy aliases ────────────────────────────────────────────────────────────
+# --- legacy aliases ---
 
 @app.route("/predict", methods=["POST"])
 def legacy_predict() -> Response:
@@ -156,7 +161,7 @@ def legacy_stats() -> Response:
     )
 
 
-# ── errors ────────────────────────────────────────────────────────────────────
+# --- errors ---
 
 @app.errorhandler(HTTPException)
 def handle_http_error(exc: HTTPException):

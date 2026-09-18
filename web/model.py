@@ -117,7 +117,7 @@ class IrisModel:
         self.k_curve = self._k_curve()
         self.dataset = self._dataset_payload(X, y)
 
-    # ── evaluation ────────────────────────────────────────────────────────────
+    # --- evaluation ---
 
     def _evaluate(self) -> dict[str, Any]:
         y_pred = self.model.predict(self.X_test)
@@ -183,7 +183,7 @@ class IrisModel:
             ],
         }
 
-    # ── prediction ────────────────────────────────────────────────────────────
+    # --- prediction ---
 
     def parse_payload(self, data: Any) -> tuple[np.ndarray, list[str]]:
         """Validate a JSON body. Returns (features[1x4], warnings)."""
@@ -257,7 +257,7 @@ class IrisModel:
             "warnings": warnings,
         }
 
-    # ── summary ───────────────────────────────────────────────────────────────
+    # --- summary ---
 
     def describe(self) -> dict[str, Any]:
         return {

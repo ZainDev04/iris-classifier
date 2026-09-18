@@ -17,3 +17,5 @@ Thumbs.db
 *.log
 *.zip
 /charts/
+
+.vercel

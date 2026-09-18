@@ -1,11 +1,11 @@
 """
-Data Classification Using AI — Iris KNN pipeline
-================================================
+Data Classification Using AI: Iris KNN pipeline
+===============================================
 DecodeLabs | Industrial Training Kit - Artificial Intelligence | Project 2
 
 A complete supervised-learning workflow on the Iris dataset:
 
-    load → scale → split → train → predict → evaluate → tune K → visualise
+    load -> scale -> split -> train -> predict -> evaluate -> tune K -> visualise
 
 Run it end-to-end:
 
@@ -46,7 +46,8 @@ K_RANGE = range(1, 21)
 
 
 def banner(title: str) -> None:
-    print(f"\n{'─' * 60}\n  {title}\n{'─' * 60}")
+    rule = "-" * 60
+    print(f"\n{rule}\n  {title}\n{rule}")
 
 
 def run(k: int, out_dir: Path, show: bool) -> None:
@@ -56,17 +57,17 @@ def run(k: int, out_dir: Path, show: bool) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # ── 1. Load ───────────────────────────────────────────────────────────
+    # --- 1. Load ---
     iris = load_iris()
     df = pd.DataFrame(iris.data, columns=iris.feature_names)
     df["species"] = pd.Categorical.from_codes(iris.target, iris.target_names)
 
     print("=" * 60)
-    print("  DATA CLASSIFICATION USING AI — PROJECT 2")
+    print("  DATA CLASSIFICATION USING AI: PROJECT 2")
     print("  DecodeLabs | Shaikh Muhammad Zain")
     print("=" * 60)
 
-    banner("STEP 1 · Dataset overview")
+    banner("STEP 1: Dataset overview")
     print(f"  Samples        : {len(df)}")
     print(f"  Features       : {list(iris.feature_names)}")
     print(f"  Classes        : {[str(n) for n in iris.target_names]}")
@@ -74,33 +75,33 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     print()
     print(df.head().to_string())
 
-    # ── 2. Scale ──────────────────────────────────────────────────────────
+    # --- 2. Scale ---
     # KNN measures Euclidean distance, so every feature must live on the same
     # scale or the largest-valued one (sepal length) dominates the vote.
     X, y = iris.data, iris.target
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    banner("STEP 2 · Feature scaling (StandardScaler)")
-    print(f"  sepal length before : {X[:, 0].min():.1f} → {X[:, 0].max():.1f} cm")
-    print(f"  sepal length after  : {X_scaled[:, 0].min():.2f} → {X_scaled[:, 0].max():.2f} (z-score)")
+    banner("STEP 2: Feature scaling (StandardScaler)")
+    print(f"  sepal length before : {X[:, 0].min():.1f} to {X[:, 0].max():.1f} cm")
+    print(f"  sepal length after  : {X_scaled[:, 0].min():.2f} to {X_scaled[:, 0].max():.2f} (z-score)")
 
-    # ── 3. Split ──────────────────────────────────────────────────────────
+    # --- 3. Split ---
     X_train, X_test, y_train, y_test = train_test_split(
         X_scaled, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
     )
-    banner("STEP 3 · Train / test split")
+    banner("STEP 3: Train / test split")
     print(f"  Training : {len(X_train)} samples ({int((1 - TEST_SIZE) * 100)} %)")
-    print(f"  Testing  : {len(X_test)} samples ({int(TEST_SIZE * 100)} %)  — stratified, seed {RANDOM_STATE}")
+    print(f"  Testing  : {len(X_test)} samples ({int(TEST_SIZE * 100)} %), stratified, seed {RANDOM_STATE}")
 
-    # ── 4. Train ──────────────────────────────────────────────────────────
+    # --- 4. Train ---
     model = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
-    banner("STEP 4 · Train KNN")
+    banner("STEP 4: Train KNN")
     print(f"  Algorithm : K-Nearest Neighbors, K = {k}")
 
-    # ── 5. Predict ────────────────────────────────────────────────────────
+    # --- 5. Predict ---
     y_pred = model.predict(X_test)
-    banner("STEP 5 · Predictions on the test set")
+    banner("STEP 5: Predictions on the test set")
     results = pd.DataFrame(
         {
             "Actual": iris.target_names[y_test],
@@ -110,7 +111,7 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     )
     print(results.to_string(index=False))
 
-    # ── 6. Evaluate ───────────────────────────────────────────────────────
+    # --- 6. Evaluate ---
     accuracy = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred, average="weighted")
     cm = confusion_matrix(y_test, y_pred)
@@ -118,7 +119,7 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
     cv_scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), X_scaled, y, cv=cv)
 
-    banner("STEP 6 · Evaluation")
+    banner("STEP 6: Evaluation")
     print(f"  Accuracy (test)     : {accuracy * 100:.2f} %")
     print(f"  F1 score (weighted) : {f1:.4f}")
     print(f"  5-fold CV accuracy  : {cv_scores.mean() * 100:.2f} % ± {cv_scores.std() * 100:.2f}")
@@ -133,18 +134,18 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     print("\n  Classification report")
     print(classification_report(y_test, y_pred, target_names=iris.target_names))
 
-    # ── 7. Tune K ─────────────────────────────────────────────────────────
+    # --- 7. Tune K ---
     k_scores = [
         accuracy_score(y_test, KNeighborsClassifier(n_neighbors=kk).fit(X_train, y_train).predict(X_test))
         for kk in K_RANGE
     ]
     best_k = list(K_RANGE)[int(np.argmax(k_scores))]
-    banner("STEP 7 · Elbow method")
+    banner("STEP 7: Elbow method")
     print(f"  Best K on the test split : {best_k} ({max(k_scores) * 100:.2f} %)")
     print(f"  Using K = {k} keeps the decision boundary smooth instead of chasing one split.")
 
-    # ── 8. Visualise ──────────────────────────────────────────────────────
-    banner("STEP 8 · Charts")
+    # --- 8. Visualise ---
+    banner("STEP 8: Charts")
     sns.set_theme(style="whitegrid", font="DejaVu Sans")
 
     plt.figure(figsize=(6.5, 5))
@@ -159,13 +160,13 @@ def run(k: int, out_dir: Path, show: bool) -> None:
         linewidths=2,
         linecolor="white",
     )
-    plt.title(f"Confusion matrix — KNN (K={k})", pad=12)
+    plt.title(f"Confusion matrix, KNN (K={k})", pad=12)
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     plt.tight_layout()
     plt.savefig(out_dir / "confusion_matrix.png", dpi=150)
     plt.close()
-    print(f"  → {out_dir / 'confusion_matrix.png'}")
+    print(f"  saved {out_dir / 'confusion_matrix.png'}")
 
     plt.figure(figsize=(8, 4))
     plt.plot(list(K_RANGE), [s * 100 for s in k_scores], marker="o", color=ACCENT, linewidth=2)
@@ -178,7 +179,7 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     plt.tight_layout()
     plt.savefig(out_dir / "k_vs_accuracy.png", dpi=150)
     plt.close()
-    print(f"  → {out_dir / 'k_vs_accuracy.png'}")
+    print(f"  saved {out_dir / 'k_vs_accuracy.png'}")
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 7))
     for ax, feature in zip(axes.flatten(), iris.feature_names):
@@ -192,10 +193,10 @@ def run(k: int, out_dir: Path, show: bool) -> None:
     plt.tight_layout()
     plt.savefig(out_dir / "feature_distribution.png", dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  → {out_dir / 'feature_distribution.png'}")
+    print(f"  saved {out_dir / 'feature_distribution.png'}")
 
-    # ── 9. Predict a new flower ───────────────────────────────────────────
-    banner("STEP 9 · Predict a new flower")
+    # --- 9. Predict a new flower ---
+    banner("STEP 9: Predict a new flower")
     new_flower = np.array([[5.1, 3.5, 1.4, 0.2]])
     proba = model.predict_proba(scaler.transform(new_flower))[0]
     print("  Input  : sepal 5.1 × 3.5 cm, petal 1.4 × 0.2 cm")
@@ -204,7 +205,7 @@ def run(k: int, out_dir: Path, show: bool) -> None:
         print(f"  {name:12} {'█' * int(p * 20):20} {p * 100:5.1f} %")
 
     print(f"\n{'=' * 60}")
-    print(f"  DONE · accuracy {accuracy * 100:.2f} % · F1 {f1:.4f} · K={k}")
+    print(f"  DONE: accuracy {accuracy * 100:.2f} %, F1 {f1:.4f}, K={k}")
     print(f"{'=' * 60}\n")
 
 

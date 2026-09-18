@@ -1,209 +1,197 @@
-# Design system — Iris // KNN
+# Design system for Iris // KNN
 
-Implementation-ready UI guidance for the Iris classifier web app, derived from the **Glitch** design brief and adapted where the brief conflicts with WCAG 2.2 AA.
+UI rules for the Iris classifier web app. They come from the Glitch design brief, adjusted where the brief conflicts with WCAG 2.2 AA.
 
 ## 1. Context and goals
 
-**Intent in one sentence:** a dark, glitch-flavoured, single-page ML demo that stays fast, keyboard-first and legible on every screen from 320 px up.
+In one sentence: a dark, glitch-styled, single-page ML demo that stays fast, works from the keyboard and reads well on every screen from 320 px up.
 
 | | |
 |---|---|
 | Surface | Single-page Flask app, no build step |
-| Audience | Recruiters, interviewers, fellow students — people who skim first and dig later |
+| Audience | Recruiters, interviewers and other students. They skim first and dig later. |
 | Theme | Dark only (`color-scheme: dark`) |
-| Fonts | System Helvetica Neue stack; no web-font requests |
+| Fonts | System Helvetica Neue stack, no web-font requests |
 | Accessibility target | WCAG 2.2 AA |
 
 ## 2. Tokens and foundations
 
-All tokens live on `:root` in `web/static/css/style.css`. Components **must** reference tokens, never raw values.
+All tokens are defined on `:root` in `web/static/css/style.css`. Components must reference tokens, never raw values.
 
 ### Colour
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-surface-base` | `#000000` | Page background (brief: `surface.base`) |
-| `--color-surface-raised` | `#0a0a0a` | Panels, alternate sections |
-| `--color-surface-overlay` | `#121212` | Hover fills, tooltips, toasts |
-| `--color-surface-inset` | `#050505` | Inputs, code blocks |
-| `--color-border` | `#262626` | Default hairlines |
-| `--color-border-strong` | `#545454` | Input borders, emphasised dividers (brief's `text.primary`, repurposed — see §7) |
-| `--color-text-primary` | `#f2f2f2` | Body and headings — 18.1 : 1 on black |
-| `--color-text-secondary` | `#a6a6a6` | Supporting copy — 8.6 : 1 |
-| `--color-text-muted` | `#8a8a8a` | Labels, captions — 5.9 : 1 |
-| `--color-accent` | `#82b440` | Brand green (brief: `surface.muted`) — 7.6 : 1 on black, 4.6 : 1 for black text on it |
-| `--color-accent-strong` | `#6f9a37` | Hard shadow colour (brief: `shadow.1`) |
-| `--color-link` | `#a8d46b` | Links — 10.4 : 1 |
-| `--color-danger` | `#ff7070` | Errors — 6.4 : 1 |
-| `--color-warning` | `#f2b544` | Out-of-range warnings — 11 : 1 |
-| `--color-setosa` | `#74a636` | Categorical series 1 |
-| `--color-versicolor` | `#d9566f` | Categorical series 2 |
-| `--color-virginica` | `#2f8fd6` | Categorical series 3 |
+| Token | Value | Use | Contrast on black |
+|---|---|---|---|
+| `--color-surface-base` | `#000000` | Page background (brief: `surface.base`) | |
+| `--color-surface-raised` | `#0a0a0a` | Panels, alternate sections | |
+| `--color-surface-overlay` | `#121212` | Hover fills, tooltips, toasts | |
+| `--color-surface-inset` | `#050505` | Inputs, code blocks | |
+| `--color-border` | `#262626` | Default hairlines | |
+| `--color-border-strong` | `#545454` | Input borders, stronger dividers. This is the brief's `text.primary`, reused for borders (see section 7). | |
+| `--color-text-primary` | `#f2f2f2` | Body and headings | 18.1 : 1 |
+| `--color-text-secondary` | `#a6a6a6` | Supporting copy | 8.6 : 1 |
+| `--color-text-muted` | `#8a8a8a` | Labels, captions | 5.9 : 1 |
+| `--color-accent` | `#82b440` | Brand green (brief: `surface.muted`) | 7.6 : 1, and 4.6 : 1 for black text on it |
+| `--color-accent-strong` | `#6f9a37` | Hard shadow colour (brief: `shadow.1`) | |
+| `--color-link` | `#a8d46b` | Links | 10.4 : 1 |
+| `--color-danger` | `#ff7070` | Errors | 6.4 : 1 |
+| `--color-warning` | `#f2b544` | Out-of-range warnings | 11 : 1 |
+| `--color-setosa` | `#74a636` | Categorical series 1 | |
+| `--color-versicolor` | `#d9566f` | Categorical series 2 | |
+| `--color-virginica` | `#2f8fd6` | Categorical series 3 | |
 
-The three species colours were checked with a CVD validator (OKLab ΔE) on the black surface: lightness band, chroma floor, protan/deutan/tritan separation and normal-vision floor all pass. Colour is never the only carrier of identity — every series also has a text label or legend entry.
+The three species colours were checked with a colour-vision-deficiency validator (OKLab delta E) against the black surface. They pass the lightness band, the chroma floor, the protan, deutan and tritan separation checks and the normal-vision floor. Colour is never the only carrier of identity: every series also has a text label or a legend entry.
 
 ### Typography
 
 | Token | Value |
 |---|---|
 | `--font-primary` | `"Helvetica Neue", Helvetica, Arial, sans-serif` |
-| `--font-mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` — numbers, code, axis ticks |
+| `--font-mono` | `ui-monospace, "SF Mono", Menlo, Consolas, monospace` for numbers, code and axis ticks |
 | `--text-xs / sm / md / lg / xl` | 12 / 14 / 16 / 20 / 26 px |
-| `--text-2xl` | `clamp(28px, 4vw, 40px)` — section titles |
-| `--text-display` | `clamp(34px, 8vw, 84px)` — hero only |
-| Base | 16 px / 400 / 1.5 line-height |
+| `--text-2xl` | `clamp(28px, 4vw, 40px)` for section titles |
+| `--text-display` | `clamp(34px, 8vw, 84px)` for the hero only |
+| Base | 16 px, weight 400, line-height 1.5 |
 
 ### Spacing, radius, shadow, motion
 
-- Spacing scale (5 px base): `--space-1…20` = 5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100 px. No off-scale values.
-- `--radius-xs: 4px` on everything rectangular; `--radius-pill` for the switch only.
-- `--shadow-1: 0 2px 0 0 rgb(111 154 55)` — the brief's hard offset shadow, used on primary buttons and step numbers; `--shadow-2` (4 px) on hover.
-- Motion: `--motion-fast 150ms`, `--motion-base 250ms`, `--motion-slow 600ms`, `--ease-out cubic-bezier(.16,1,.3,1)`. Glitch effects use `steps(2, end)`.
+- Spacing scale on a 5 px base: `--space-1` to `--space-20` are 5, 10, 15, 20, 25, 30, 40, 50, 60, 80 and 100 px. No off-scale values.
+- `--radius-xs: 4px` on everything rectangular. `--radius-pill` is for the switch only.
+- `--shadow-1: 0 2px 0 0 rgb(111 154 55)` is the brief's hard offset shadow, used on primary buttons and step numbers. `--shadow-2` (4 px) is the hover state.
+- Motion: `--motion-fast` 150 ms, `--motion-base` 250 ms, `--motion-slow` 600 ms, `--ease-out cubic-bezier(.16,1,.3,1)`. Glitch effects use `steps(2, end)`.
 - Touch target: `--tap: 44px` minimum on every interactive element.
 
 ### Breakpoints
 
 | Range | Layout changes |
 |---|---|
-| ≤ 360 px | Stat strip 1 column |
-| ≤ 480 px | Full-width hero buttons, 2-column preset chips, compact confusion matrix |
-| ≤ 767 px | Hamburger navigation, single-column grids, smaller nav height, tighter tables |
-| ≤ 1023 px | Predict grid and API cards single column, pipeline steps 2 columns |
-| ≥ 1440 px | Container widens to 1280 px |
+| up to 360 px | Stat strip in 1 column |
+| up to 480 px | Full-width hero buttons, preset chips in 2 columns, compact confusion matrix |
+| up to 767 px | Hamburger navigation, single-column grids, shorter nav bar, tighter tables |
+| up to 1023 px | Predict grid and API cards in a single column, pipeline steps in 2 columns |
+| 1440 px and up | Container widens to 1280 px |
 
-Every layout **must** render with zero horizontal overflow at 320, 360, 390, 412, 430, 480, 767 and 1024 px.
+Every layout must render with zero horizontal overflow at 320, 360, 390, 412, 430, 480, 767 and 1024 px.
 
 ## 3. Component rules
 
-Every interactive component defines **default, hover, focus-visible, active, disabled, loading and error** states. Focus-visible is one global rule: 2 px accent outline, 3 px offset. Hover styles never replace focus styles.
+Every interactive component defines default, hover, focus-visible, active, disabled, loading and error states. Focus-visible is one global rule: a 2 px accent outline with a 3 px offset. Hover styles never replace focus styles.
 
 ### Button (`.btn`)
 
-- Anatomy: label, optional arrow/spinner. Min-height 44 px, uppercase 14 px bold, 4 px radius.
-- Variants: `btn-primary` (accent fill, black text, hard shadow) · `btn-ghost` (transparent, strong border).
-- States: hover lifts 2 px and deepens the shadow; active drops 1 px and removes the shadow; disabled 45 % opacity + `not-allowed`; loading (`.is-loading`) shows the spinner, sets `aria-busy`, blocks pointer events.
-- Keyboard: Enter/Space. Pointer and touch identical. Long labels wrap; never truncate.
+Anatomy: label, optional arrow or spinner. Minimum height 44 px, uppercase 14 px bold, 4 px radius. Two variants: `btn-primary` (accent fill, black text, hard shadow) and `btn-ghost` (transparent, strong border).
 
-### Range + number field (`.field`)
+Hover lifts the button 2 px and deepens the shadow. Active drops it 1 px and removes the shadow. Disabled is 45 % opacity with a `not-allowed` cursor. Loading (`.is-loading`) shows the spinner, sets `aria-busy` and blocks pointer events. Enter and Space activate it. Pointer and touch behave the same. Long labels wrap and are never truncated.
 
-- Anatomy: label, number input with unit, range slider with min/max bounds, error line.
-- The two inputs are always in sync; the number input is the source of truth for the API call.
-- Range fill uses `--pct` set from JS (CSSOM only — CSP-safe). Thumb 20 px, hit area 44 px tall.
-- Keyboard: arrows step 0.1, Page Up/Down and Home/End native. `aria-valuetext` announces "x.x centimetres".
-- Error state: `.is-invalid` red border, message in `role="alert"`, submit refuses and focuses the first invalid field. Values outside the dataset range are **warnings** (rendered in the result), not errors — only ≤ 0 or > 30 cm are rejected.
-- Disabled: 40 % opacity, `not-allowed`.
+### Range and number field (`.field`)
+
+Anatomy: label, number input with unit, range slider with min and max bounds, error line. The two inputs stay in sync. The number input is the source of truth for the API call.
+
+The range fill is driven by a `--pct` custom property set from JavaScript through the CSSOM, which keeps it CSP-safe. The thumb is 20 px and the hit area 44 px tall. Arrow keys step 0.1; Page Up, Page Down, Home and End work natively. `aria-valuetext` reads "x.x centimetres".
+
+An invalid value adds `.is-invalid` (red border) and writes the message into a `role="alert"` element. Submit refuses and focuses the first invalid field. Values outside the dataset range are warnings shown in the result, not errors. Only values of 0 or below, or above 30 cm, are rejected. Disabled is 40 % opacity with `not-allowed`.
 
 ### Preset chip (`.chip`)
 
-- 40 px tall, species dot + label. Hover raises 1 px with accent border; active state (`.is-active`) shows an inset accent ring until any slider changes.
-- Chips wrap to two columns below 480 px.
+40 px tall, species dot plus label. Hover lifts it 1 px with an accent border. `.is-active` shows an inset accent ring until any slider changes. Chips wrap to two columns below 480 px.
 
 ### Switch (`.switch`)
 
-- Native checkbox visually hidden; track/thumb are presentational. Focus ring drawn on the track via `:focus-visible + .switch-track`.
-- Toggling shows a toast confirming the mode.
+The native checkbox is visually hidden; the track and thumb are presentational. The focus ring is drawn on the track through `:focus-visible + .switch-track`. Toggling shows a toast that confirms the mode.
 
 ### Result panel (`.panel-result`)
 
-- `data-state` = `empty | loading | result | error`. Exactly one `[data-view]` is visible.
-- The panel has a visually hidden `role="status"` live region announcing "Predicted X with Y % confidence" or "Prediction failed".
-- Loading pulses the border; the previous result stays visible until the new one arrives (no flash of empty).
-- Error view includes the server message and a retry button.
-- Species name flashes the glitch treatment once when the class changes (not on every prediction).
+`data-state` is one of `empty`, `loading`, `result` or `error`, and exactly one `[data-view]` is visible. A visually hidden `role="status"` live region announces "Predicted X with Y % confidence" or "Prediction failed". Loading pulses the border while the previous result stays visible, so there is no flash of an empty panel. The error view shows the server message and a retry button. The species name runs the glitch animation once when the class changes, not on every prediction.
 
 ### Navigation (`.nav`)
 
-- Sticky, blurred, 60 px (56 px mobile). Below 768 px a `button[aria-expanded][aria-controls]` toggles the menu.
-- Escape closes the menu and returns focus to the toggle; clicking outside closes it; every link closes it.
-- Anchored sections use `scroll-padding-top` so headings are never hidden under the bar.
+Sticky, blurred, 60 px tall (56 px on mobile). Below 768 px a `button[aria-expanded][aria-controls]` toggles the menu. Escape closes the menu and returns focus to the toggle. Clicking outside closes it, and so does every link. Anchored sections use `scroll-padding-top` so headings never land under the bar.
 
 ### Tabs (`.tabs`)
 
-- `role="tablist"` / `role="tab"` / `role="tabpanel"`; roving `tabindex`; Left/Right/Home/End move and activate.
+`role="tablist"`, `role="tab"` and `role="tabpanel"` with a roving `tabindex`. Left, Right, Home and End move and activate.
 
 ### Charts (`.chart`)
 
-- Inline SVG sized to the container width so type is always rendered at true size; re-rendered on resize (debounced 200 ms).
-- Marks: 2 px lines, ≥ 8 px markers, 2 px surface ring on scatter dots, 2 px gaps between grouped bars, rounded data-ends only.
-- Hover layer on every chart: crosshair + tooltip on the line chart, per-mark tooltip on dots and bars. Tooltip is `role="tooltip"`, pointer-events none, kept inside the viewport.
-- Each chart container has an `aria-label` describing what it shows and, for the scatter, the current input position. Legends are real lists.
-- Text inside charts uses text tokens; series colour appears only on marks and swatches.
+Inline SVG sized to the container width so text is always drawn at true size, re-rendered on resize (debounced 200 ms). Lines are 2 px, markers at least 8 px, scatter dots carry a 2 px surface ring, grouped bars have 2 px gaps, and only the data end of a bar is rounded.
+
+Every chart has a hover layer: crosshair plus tooltip on the line chart, a per-mark tooltip on dots and bars. The tooltip is `role="tooltip"`, has `pointer-events: none` and is kept inside the viewport. Each chart container carries an `aria-label` describing what it shows; the scatter label includes the current input position. Legends are real lists. Text inside charts uses text tokens; series colour appears only on marks and swatches.
 
 ### Tables
 
-- Real `<table>` with `scope`d headers, wrapped in `.table-scroll` for horizontal overflow on narrow screens. Mono, tabular numerals for numbers.
+Real `<table>` elements with `scope`d headers, wrapped in `.table-scroll` for horizontal overflow on narrow screens. Numbers use the mono font with tabular digits.
 
 ### Confusion matrix (`.cm`)
 
-- CSS grid with `role="table"` → `role="row"` (`display: contents`) → `columnheader | rowheader | cell`. Cells are focusable and carry a full `aria-label` ("2 virginica samples predicted as versicolor").
-- Sequential fill: one hue (accent) scaled by `--v` from 0.05 to 0.7 alpha.
+A CSS grid with `role="table"`, `role="row"` (`display: contents`), then `columnheader`, `rowheader` and `cell`. Cells are focusable and carry a full `aria-label` such as "2 virginica samples predicted as versicolor". The fill is one hue (the accent) scaled by `--v` from 0.05 to 0.7 alpha.
 
 ### Toast, tooltip, skip link
 
-- Toast: `role="status"`, auto-dismiss 2.6 s, error variant with danger border.
-- Skip link is the first focusable element and becomes visible on focus.
+The toast is `role="status"`, dismisses itself after 2.6 s, and has an error variant with a danger border. The skip link is the first focusable element and becomes visible on focus.
 
 ## 4. Accessibility acceptance criteria
 
-Each item is pass/fail in implementation:
+Each item is pass or fail in implementation.
 
-1. Every text/background pair in the token table measures ≥ 4.5 : 1 (≥ 3 : 1 for ≥ 24 px or bold ≥ 19 px text). *Check with a contrast tool against `#000`, `#0a0a0a`, `#121212`.*
-2. Tab through the whole page: every control reachable in visual order, every one shows the accent focus ring, none traps focus.
-3. With a screen reader, run a prediction: the result is announced once, without the visible panel duplicating it.
+1. Every text and background pair in the token table measures at least 4.5 : 1 (3 : 1 for text at 24 px or larger, or bold at 19 px or larger). Check with a contrast tool against `#000`, `#0a0a0a` and `#121212`.
+2. Tab through the whole page. Every control is reachable in visual order, every one shows the accent focus ring, and none traps focus.
+3. With a screen reader, run a prediction. The result is announced once, and the visible panel does not duplicate it.
 4. Sliders report a value in centimetres, not a bare number.
-5. The mobile menu toggle exposes `aria-expanded` that flips on toggle, and Escape closes it.
-6. Tabs respond to arrow keys and only the selected tab is in the tab order.
-7. The confusion matrix reads as a table with headers; Lighthouse `aria-required-children/parent` pass.
-8. `prefers-reduced-motion: reduce` removes count-ups, glitch layers, reveal transitions and bar/line draw-in.
-9. All targets ≥ 44 × 44 px on touch.
-10. Page has one `<h1>`, sequential headings, `lang`, meta description and a skip link.
-11. Lighthouse accessibility = 100 on mobile and desktop.
+5. The mobile menu toggle exposes `aria-expanded`, it flips on toggle, and Escape closes the menu.
+6. Tabs respond to arrow keys, and only the selected tab is in the tab order.
+7. The confusion matrix reads as a table with headers, and Lighthouse's `aria-required-children` and `aria-required-parent` audits pass.
+8. `prefers-reduced-motion: reduce` removes the count-ups, the glitch layers, the reveal transitions and the bar and line draw-in.
+9. All targets are at least 44 by 44 px on touch.
+10. The page has one `<h1>`, sequential heading levels, a `lang` attribute, a meta description and a skip link.
+11. Lighthouse accessibility is 100 on mobile and desktop.
 
 ## 5. Content and tone
 
-Concise, confident, implementation-focused. Sentence case everywhere except uppercase micro-labels.
+Plain sentences. Sentence case everywhere except uppercase micro-labels.
 
 | Do | Don't |
 |---|---|
 | "Predict species" | "Submit" |
-| "Sepal length 9.5 cm is outside the training range (4.3–7.9 cm); confidence may be unreliable." | "Warning: bad value" |
+| "Sepal length 9.5 cm is outside the training range (4.3 to 7.9 cm); confidence may be unreliable." | "Warning: bad value" |
 | "Could not reach the server. Check your connection and try again." | "Error 500" |
-| "The 5 nearest neighbours — 4 of 5 voted versicolor" | "Neighbors" |
+| "The 5 nearest neighbours (4 of 5 voted versicolor)" | "Neighbors" |
 
-Numbers use tabular monospaced digits. Units are always spelled out on first use ("centimetres") and abbreviated after ("cm").
+Numbers use tabular monospaced digits. Units are spelled out on first use ("centimetres") and abbreviated after that ("cm").
 
-## 6. Anti-patterns (prohibited)
+## 6. Anti-patterns
 
-- Raw hex values in component CSS; new spacing or font sizes outside the scale.
-- Removing or recolouring the focus ring; `outline: none` without a replacement.
-- Colour-only meaning (species, status) without a label, icon or pattern.
-- Inline `style=""` attributes or inline `<script>` — they break the CSP.
+These are prohibited.
+
+- Raw hex values in component CSS, or new spacing and font sizes outside the scale.
+- Removing or recolouring the focus ring, or `outline: none` without a replacement.
+- Colour as the only carrier of meaning (species, status) without a label, icon or pattern.
+- Inline `style=""` attributes or inline `<script>`; they break the CSP.
 - Third-party fonts, analytics or CDN scripts.
-- Static chart images — every chart is derived from the API.
-- Dual y-axes, rainbow or cycled palettes, a number on every data point.
-- Animations that run for users who asked for reduced motion.
+- Static chart images; every chart comes from the API.
+- Dual y-axes, rainbow or cycled palettes, or a number on every data point.
+- Animation that runs for users who asked for reduced motion.
 
 ## 7. Deviations from the brief and migration notes
 
 | Brief token | Brief value | Decision |
 |---|---|---|
-| `color.text.primary` | `#545454` | 2.4 : 1 on black — fails AA. Used for **borders** (`--color-border-strong`); body text uses `#f2f2f2`. |
+| `color.text.primary` | `#545454` | 2.4 : 1 on black, which fails AA. Used for borders (`--color-border-strong`). Body text is `#f2f2f2`. |
 | `color.text.secondary` | `#0000ee` | 2.2 : 1 on black. Replaced by `--color-link #a8d46b`. |
 | `color.text.tertiary` | `#ffffff` | Softened to `#f2f2f2` to reduce halation on pure black. |
-| `font.family.primary` | Helvetica Neue | Kept, via the system stack — no font download. |
-| `radius.xs`, `shadow.1`, `space.*` | as specified | Kept verbatim. |
+| `font.family.primary` | Helvetica Neue | Kept, through the system stack, so nothing is downloaded. |
+| `radius.xs`, `shadow.1`, `space.*` | as specified | Kept as written. |
 
-Migration from v1 (Inter / navy / light theme): all v1 class names were retired; legacy API routes (`/predict`, `/stats`) are preserved so old links work.
+Migrating from v1 (Inter, navy, light theme): all v1 class names were retired. The v1 API routes `/predict` and `/stats` still work so old links do not break.
 
 ## 8. QA checklist
 
-- [ ] `python -m pytest` green
-- [ ] Lighthouse mobile + desktop: 4 × 100
-- [ ] Widths 320 / 360 / 390 / 412 / 430 / 480 / 767 / 1024 / 1440: no horizontal scroll, no clipped controls
+- [ ] `python -m pytest` passes
+- [ ] Lighthouse mobile and desktop: 100 in all four categories
+- [ ] Widths 320, 360, 390, 412, 430, 480, 767, 1024 and 1440 px: no horizontal scroll, no clipped controls
 - [ ] Keyboard-only run-through: nav, sliders, presets, switch, submit, tabs, axis selects, copy buttons
 - [ ] Screen-reader run-through of a prediction
 - [ ] Reduced-motion mode: no animation
-- [ ] Network offline: error view and retry work; charts fail gracefully with a toast
+- [ ] Network offline: the error view and retry work; charts fail with a toast
 - [ ] Invalid input (`abc`, `-1`, `99`): inline error, no request sent
 - [ ] Out-of-range input (`9.5` sepal length): prediction returned with a warning
-- [ ] Browser console clean of errors and CSP violations
+- [ ] Browser console has no errors and no CSP violations

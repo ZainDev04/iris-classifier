@@ -1,0 +1,9 @@
+assets
+tests
+.github
+*.md
+classifier.py
+/requirements.txt
+/requirements-dev.txt
+node_modules
+__pycache__

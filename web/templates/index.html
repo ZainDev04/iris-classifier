@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#000000">
-<title>Iris Species Classifier · KNN Demo</title>
+<title>Iris Species Classifier | KNN Demo</title>
 <meta name="description" content="Interactive K-Nearest Neighbors classifier for the Iris dataset. Enter four petal and sepal measurements and get a species prediction with confidence scores, nearest-neighbour explanations and live charts. Built with Flask and scikit-learn.">
-<meta property="og:title" content="Iris Species Classifier · KNN Demo">
+<meta property="og:title" content="Iris Species Classifier | KNN Demo">
 <meta property="og:description" content="Interactive machine-learning demo: classify iris flowers with a K-Nearest Neighbors model, explained with live charts.">
 <meta property="og:type" content="website">
 <link rel="icon" href="{{ static_url('favicon.svg') }}" type="image/svg+xml">
@@ -19,10 +19,10 @@
 <div class="scanlines" aria-hidden="true"></div>
 <div class="noise" aria-hidden="true"></div>
 
-<!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
+<!-- ===== NAV ===== -->
 <header class="nav" id="top">
   <div class="nav-inner">
-    <a class="brand" href="#top" aria-label="IRIS//KNN — back to top">
+    <a class="brand" href="#top" aria-label="IRIS//KNN, back to top">
       <span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-text">IRIS<span class="brand-sep">//</span>KNN</span>
     </a>
@@ -46,12 +46,12 @@
 
 <main id="main" class="main">
 
-  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <!-- ===== HERO ===== -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="container">
       <p class="eyebrow reveal">
         <span class="eyebrow-dot" aria-hidden="true"></span>
-        DecodeLabs AI Internship · Project 02 · Supervised Learning
+        DecodeLabs AI Internship / Project 02 / Supervised Learning
       </p>
 
       <h1 class="hero-title glitch reveal" id="hero-title" data-text="Iris Species Classifier">Iris Species Classifier</h1>
@@ -97,7 +97,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ PREDICT ═══════════════════════════════ -->
+  <!-- ===== PREDICT ===== -->
   <section class="section" id="predict" aria-labelledby="predict-title">
     <div class="container">
       <header class="section-head reveal">
@@ -111,11 +111,11 @@
 
       <div class="predict-grid">
 
-        <!-- ── input panel ── -->
+        <!-- --- input panel --- -->
         <form class="panel panel-form reveal" id="predict-form" novalidate aria-describedby="form-hint">
           <fieldset class="fieldset">
             <legend class="legend">Measurements <span class="legend-unit">centimetres</span></legend>
-            <p class="hint" id="form-hint">Each range matches the min–max of the training data.</p>
+            <p class="hint" id="form-hint">Each range matches the smallest and largest value in the training data.</p>
 
             {% for f in features %}
             <div class="field" data-key="{{ f.key }}">
@@ -174,7 +174,7 @@
           </div>
         </form>
 
-        <!-- ── result panel ── -->
+        <!-- --- result panel --- -->
         <div class="panel panel-result reveal" id="result" data-state="empty">
           <div class="result-status visually-hidden" role="status" aria-live="polite" aria-atomic="true" id="result-live"></div>
 
@@ -240,7 +240,7 @@
           </div>
         </div>
 
-        <!-- ── scatter panel ── -->
+        <!-- --- scatter panel --- -->
         <div class="panel panel-scatter reveal">
           <div class="panel-head">
             <div>
@@ -262,7 +262,7 @@
               </label>
             </div>
           </div>
-          <div class="chart chart-scatter" id="scatter" role="img" aria-label="Scatter plot of the Iris dataset coloured by species, with the current input highlighted."></div>
+          <div class="chart chart-scatter" id="scatter" role="img" aria-label="Scatter plot of the Iris dataset coloured by species, with the current input outlined."></div>
           <ul class="legend" aria-label="Legend">
             {% for s in species %}<li><span class="legend-swatch dot-{{ s }}" aria-hidden="true"></span>{{ s }}</li>{% endfor %}
             <li><span class="legend-swatch legend-query" aria-hidden="true"></span>your input</li>
@@ -273,7 +273,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ PERFORMANCE ═══════════════════════════════ -->
+  <!-- ===== PERFORMANCE ===== -->
   <section class="section section-alt" id="performance" aria-labelledby="performance-title">
     <div class="container">
       <header class="section-head reveal">
@@ -281,7 +281,7 @@
         <h2 class="section-title" id="performance-title">Model performance</h2>
         <p class="section-sub">
           Evaluated on a held-out 20&nbsp;% test split ({{ metrics.test_samples }} samples) and
-          cross-validated on all {{ metrics.total_samples }}. Every chart below is rendered from the live model.
+          cross-validated on all {{ metrics.total_samples }}. Every chart below is drawn from the live model.
         </p>
       </header>
 
@@ -295,7 +295,7 @@
             </div>
           </div>
           <div class="cm" id="confusion-matrix" role="table" aria-label="Confusion matrix"></div>
-          <p class="cm-caption">rows = true class · columns = predicted class</p>
+          <p class="cm-caption">rows are the true class, columns are the predicted class</p>
         </div>
 
         <div class="panel reveal">
@@ -339,8 +339,8 @@
         <div class="panel panel-wide reveal">
           <div class="panel-head">
             <div>
-              <h3 class="panel-title">Choosing K — the elbow curve</h3>
-              <p class="panel-sub">Test accuracy for K = 1…20. The chosen K = {{ metrics.k }} balances accuracy against over-fitting to individual points.</p>
+              <h3 class="panel-title">Choosing K: the elbow curve</h3>
+              <p class="panel-sub">Test accuracy for K from 1 to 20. K = {{ metrics.k }} was chosen because K = 1 fits the split too closely.</p>
             </div>
           </div>
           <div class="chart chart-line" id="k-curve" role="img" aria-label="Line chart of test accuracy for K values 1 to 20."></div>
@@ -368,7 +368,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ PIPELINE ═══════════════════════════════ -->
+  <!-- ===== PIPELINE ===== -->
   <section class="section" id="pipeline" aria-labelledby="pipeline-title">
     <div class="container">
       <header class="section-head reveal">
@@ -387,44 +387,44 @@
         <li class="step reveal">
           <span class="step-num" aria-hidden="true">2</span>
           <h3 class="step-title">Scale</h3>
-          <p class="step-copy">Z-score every feature so petal width (0.1–2.5 cm) counts as much as sepal length (4.3–7.9 cm) in the distance.</p>
+          <p class="step-copy">Z-score every feature so petal width (0.1 to 2.5 cm) counts as much as sepal length (4.3 to 7.9 cm) in the distance.</p>
           <code class="step-code">StandardScaler()</code>
         </li>
         <li class="step reveal">
           <span class="step-num" aria-hidden="true">3</span>
           <h3 class="step-title">Split</h3>
-          <p class="step-copy">80 / 20 stratified split with a fixed seed so every run is reproducible and each class appears in both sets.</p>
+          <p class="step-copy">80 / 20 stratified split with a fixed seed, so every run gives the same result and each class appears in both sets.</p>
           <code class="step-code">train_test_split(stratify=y)</code>
         </li>
         <li class="step reveal">
           <span class="step-num" aria-hidden="true">4</span>
           <h3 class="step-title">Train</h3>
-          <p class="step-copy">KNN has no training phase in the usual sense — it stores the scaled points and defers work to prediction time.</p>
+          <p class="step-copy">KNN has no training phase in the usual sense. It stores the scaled points and does the work at prediction time.</p>
           <code class="step-code">KNeighborsClassifier(n_neighbors=5)</code>
         </li>
         <li class="step reveal">
           <span class="step-num" aria-hidden="true">5</span>
           <h3 class="step-title">Evaluate</h3>
-          <p class="step-copy">Accuracy, weighted F1, a confusion matrix and 5-fold cross-validation guard against a lucky split.</p>
+          <p class="step-copy">Accuracy, weighted F1 and a confusion matrix on the test split, then 5-fold cross-validation to check the score holds on other splits too.</p>
           <code class="step-code">cross_val_score(cv=5)</code>
         </li>
         <li class="step reveal">
           <span class="step-num" aria-hidden="true">6</span>
           <h3 class="step-title">Serve</h3>
-          <p class="step-copy">A Flask API exposes predictions, probabilities and the neighbours that voted — so results are explainable, not a black box.</p>
+          <p class="step-copy">A Flask API returns the prediction, the probabilities and the neighbours that voted, so you can see why the model answered the way it did.</p>
           <code class="step-code">POST /api/predict</code>
         </li>
       </ol>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════ API ═══════════════════════════════ -->
+  <!-- ===== API ===== -->
   <section class="section section-alt" id="api" aria-labelledby="api-title">
     <div class="container">
       <header class="section-head reveal">
         <p class="section-index" aria-hidden="true">04</p>
         <h2 class="section-title" id="api-title">JSON API</h2>
-        <p class="section-sub">Everything on this page is driven by three public endpoints. No keys required.</p>
+        <p class="section-sub">Everything on this page comes from three public endpoints. No keys needed.</p>
       </header>
 
       <div class="api-grid">
@@ -433,7 +433,7 @@
             <span class="method method-post">POST</span>
             <code class="api-path">/api/predict</code>
           </div>
-          <p class="api-copy">Classify a flower. Returns species, confidence, per-class probabilities and the K nearest training samples.</p>
+          <p class="api-copy">Classify a flower. Returns the species, confidence, per-class probabilities and the K nearest training samples.</p>
           <div class="code-wrap">
             <button class="copy-btn" type="button" data-copy="curl-predict" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-predict"><code>curl -X POST {{ request.url_root }}api/predict \
@@ -448,7 +448,7 @@
             <span class="method method-get">GET</span>
             <code class="api-path">/api/model</code>
           </div>
-          <p class="api-copy">Model card: metrics, confusion matrix, per-class report, K-curve, feature ranges and species metadata.</p>
+          <p class="api-copy">Metrics, confusion matrix, per-class report, K curve, feature ranges and species notes.</p>
           <div class="code-wrap">
             <button class="copy-btn" type="button" data-copy="curl-model" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-model"><code>curl {{ request.url_root }}api/model</code></pre>
@@ -460,7 +460,7 @@
             <span class="method method-get">GET</span>
             <code class="api-path">/api/dataset</code>
           </div>
-          <p class="api-copy">All 150 raw samples with labels — the data behind the scatter plot and histograms.</p>
+          <p class="api-copy">All 150 raw samples with labels. This is the data behind the scatter plot and histograms.</p>
           <div class="code-wrap">
             <button class="copy-btn" type="button" data-copy="curl-dataset" aria-label="Copy example request">Copy</button>
 <pre class="code" id="curl-dataset"><code>curl {{ request.url_root }}api/dataset</code></pre>
@@ -472,12 +472,12 @@
 
 </main>
 
-<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<!-- ===== FOOTER ===== -->
 <footer class="footer">
   <div class="container footer-inner">
     <div>
       <p class="footer-brand">IRIS<span class="brand-sep">//</span>KNN <span class="footer-version">v{{ version }}</span></p>
-      <p class="footer-copy">Built by <strong>Shaikh Muhammad Zain</strong> · AI Intern, DecodeLabs · NED University</p>
+      <p class="footer-copy">Built by <strong>Shaikh Muhammad Zain</strong>, AI Intern at DecodeLabs, NED University</p>
     </div>
     <ul class="footer-links">
       <li><a href="{{ github_url }}" target="_blank" rel="noopener noreferrer">Source code<span class="visually-hidden"> (opens in a new tab)</span></a></li>

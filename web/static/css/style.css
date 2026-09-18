@@ -1,9 +1,9 @@
 /* ==========================================================================
-   Iris // KNN — Glitch design system
+   Iris // KNN, Glitch design system
    Token-driven, dark-only, WCAG 2.2 AA. See DESIGN.md for the rationale.
    ========================================================================== */
 
-/* ── 1. Tokens ─────────────────────────────────────────────────────────── */
+/* --- 1. Tokens --- */
 :root {
   color-scheme: dark;
 
@@ -17,7 +17,7 @@
   --color-border:        #262626;
   --color-border-strong: #545454;
 
-  /* text — all pass AA on #000 */
+  /* text: all pass AA on #000 */
   --color-text-primary:   #f2f2f2;
   --color-text-secondary: #a6a6a6;
   --color-text-muted:     #8a8a8a;
@@ -36,7 +36,7 @@
   --color-warning:      #f2b544;
   --color-warning-soft: rgba(242, 181, 68, 0.12);
 
-  /* categorical — validated for CVD on #000 */
+  /* categorical: validated for CVD on #000 */
   --color-setosa:     #74a636;
   --color-versicolor: #d9566f;
   --color-virginica:  #2f8fd6;
@@ -95,7 +95,7 @@
   --nav-h: 60px;
 }
 
-/* ── 2. Reset ──────────────────────────────────────────────────────────── */
+/* --- 2. Reset --- */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 10px); -webkit-text-size-adjust: 100%; }
 body {
@@ -127,7 +127,7 @@ img, svg { display: block; max-width: 100%; }
   white-space: nowrap; border: 0;
 }
 
-/* Focus — one rule for everything interactive */
+/* Focus: one rule for everything interactive */
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
@@ -155,7 +155,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .skip-link:focus { transform: translateY(0); }
 
-/* ── 3. Atmosphere (scanlines + noise) ─────────────────────────────────── */
+/* --- 3. Atmosphere (scanlines + noise) --- */
 .scanlines, .noise {
   position: fixed; inset: 0;
   pointer-events: none;
@@ -185,7 +185,7 @@ img, svg { display: block; max-width: 100%; }
   100% { background-position: 0 0, 3px 5px; }
 }
 
-/* ── 4. Navigation ─────────────────────────────────────────────────────── */
+/* --- 4. Navigation --- */
 .nav {
   position: sticky; top: 0; z-index: 60;
   height: var(--nav-h);
@@ -284,7 +284,7 @@ img, svg { display: block; max-width: 100%; }
   .nav-link { width: 100%; min-height: 48px; }
 }
 
-/* ── 5. Buttons ────────────────────────────────────────────────────────── */
+/* --- 5. Buttons --- */
 .btn {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
@@ -332,7 +332,7 @@ img, svg { display: block; max-width: 100%; }
 .btn.is-loading .btn-spinner { display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── 6. Hero ───────────────────────────────────────────────────────────── */
+/* --- 6. Hero --- */
 .hero {
   position: relative;
   padding: var(--space-16) 0 var(--space-12);
@@ -420,7 +420,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .stat .unit { color: var(--color-accent); font-size: 0.7em; margin-left: 2px; }
 
-/* ── 7. Glitch text ────────────────────────────────────────────────────── */
+/* --- 7. Glitch text --- */
 .glitch { position: relative; display: inline-block; }
 .glitch::before, .glitch::after {
   content: attr(data-text);
@@ -475,7 +475,7 @@ img, svg { display: block; max-width: 100%; }
   100% { opacity: 0; clip-path: inset(100% 0 0 0); }
 }
 
-/* ── 8. Sections & panels ──────────────────────────────────────────────── */
+/* --- 8. Sections & panels --- */
 .section { padding: var(--space-16) 0; }
 .section-alt { background: var(--color-surface-raised); border-block: 1px solid var(--color-border); }
 .section-head { max-width: 70ch; margin-bottom: var(--space-8); }
@@ -532,7 +532,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .block-note { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--color-text-secondary); }
 
-/* ── 9. Predict layout ─────────────────────────────────────────────────── */
+/* --- 9. Predict layout --- */
 .predict-grid {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -545,7 +545,7 @@ img, svg { display: block; max-width: 100%; }
   .panel-form { grid-row: auto; }
 }
 
-/* ── 10. Form fields ───────────────────────────────────────────────────── */
+/* --- 10. Form fields --- */
 .fieldset { border: 0; padding: 0; margin: 0 0 var(--space-5); min-width: 0; }
 .legend {
   font-size: var(--text-md); font-weight: 700;
@@ -683,7 +683,7 @@ img, svg { display: block; max-width: 100%; }
 .switch-label { font-size: var(--text-sm); color: var(--color-text-secondary); }
 .switch:hover .switch-label { color: var(--color-text-primary); }
 
-/* ── 11. Result panel ──────────────────────────────────────────────────── */
+/* --- 11. Result panel --- */
 .panel-result { min-height: 320px; display: flex; flex-direction: column; }
 .panel-result[data-state="loading"] { animation: panel-pulse 1s ease-in-out infinite; }
 @keyframes panel-pulse { 50% { border-color: var(--color-accent); } }
@@ -775,7 +775,7 @@ img, svg { display: block; max-width: 100%; }
 .neighbors-block { margin-bottom: var(--space-4); }
 .result-detail { font-size: var(--text-sm); color: var(--color-text-secondary); border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
 
-/* ── 12. Tables ────────────────────────────────────────────────────────── */
+/* --- 12. Tables --- */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-inline: calc(var(--space-2) * -1); padding-inline: var(--space-2); }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); min-width: 320px; }
 .table th, .table td { padding: var(--space-2); text-align: left; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
@@ -796,7 +796,7 @@ img, svg { display: block; max-width: 100%; }
 .mini-stats dt { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
 .mini-stats dd { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 700; margin-top: 2px; }
 
-/* ── 13. Charts ────────────────────────────────────────────────────────── */
+/* --- 13. Charts --- */
 .chart { width: 100%; position: relative; }
 .chart svg { width: 100%; height: auto; overflow: visible; }
 .chart .grid line { stroke: var(--color-border); stroke-width: 1; }
@@ -889,12 +889,12 @@ img, svg { display: block; max-width: 100%; }
 }
 .select:hover { border-color: var(--color-accent); }
 
-/* ── 14. Performance grid ──────────────────────────────────────────────── */
+/* --- 14. Performance grid --- */
 .perf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .panel-wide { grid-column: 1 / -1; }
 @media (max-width: 767px) { .perf-grid { grid-template-columns: minmax(0, 1fr); } }
 
-/* ── 15. Pipeline steps ────────────────────────────────────────────────── */
+/* --- 15. Pipeline steps --- */
 .steps {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
@@ -923,7 +923,7 @@ img, svg { display: block; max-width: 100%; }
 @media (max-width: 1023px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 767px) { .steps { grid-template-columns: minmax(0, 1fr); } }
 
-/* ── 16. API cards ─────────────────────────────────────────────────────── */
+/* --- 16. API cards --- */
 .api-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 @media (max-width: 1023px) { .api-grid { grid-template-columns: minmax(0, 1fr); } }
 .api-card { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -964,7 +964,7 @@ img, svg { display: block; max-width: 100%; }
 .copy-btn:hover { color: var(--color-accent); border-color: var(--color-accent); }
 .copy-btn.is-copied { color: var(--color-text-inverse); background: var(--color-accent); border-color: var(--color-accent); }
 
-/* ── 17. Footer ────────────────────────────────────────────────────────── */
+/* --- 17. Footer --- */
 .footer { border-top: 1px solid var(--color-border); padding: var(--space-8) 0; }
 .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-4); }
 .footer-brand { font-weight: 700; letter-spacing: 0.08em; }
@@ -974,7 +974,7 @@ img, svg { display: block; max-width: 100%; }
 .footer-links { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
 .footer-links a { font-size: var(--text-sm); display: inline-flex; align-items: center; min-height: var(--tap); }
 
-/* ── 18. Toast & tooltip ───────────────────────────────────────────────── */
+/* --- 18. Toast & tooltip --- */
 .toast {
   position: fixed; bottom: var(--space-4); left: 50%;
   transform: translateX(-50%);
@@ -1007,7 +1007,7 @@ img, svg { display: block; max-width: 100%; }
 .tooltip .tt-row + .tt-row { margin-top: 2px; }
 .tooltip .tt-k { color: var(--color-text-muted); }
 
-/* ── 19. Reveal on scroll ──────────────────────────────────────────────── */
+/* --- 19. Reveal on scroll --- */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--motion-slow) var(--ease-out), transform var(--motion-slow) var(--ease-out); }
 .reveal.is-visible { opacity: 1; transform: none; }
 .reveal:nth-child(2) { transition-delay: 60ms; }
@@ -1017,14 +1017,14 @@ img, svg { display: block; max-width: 100%; }
 .reveal:nth-child(6) { transition-delay: 300ms; }
 .no-js .reveal { opacity: 1; transform: none; }
 
-/* ── 20. Error page ────────────────────────────────────────────────────── */
+/* --- 20. Error page --- */
 .error-main {
   min-height: 100vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
   padding: var(--space-8) var(--gutter); max-width: var(--container); margin-inline: auto;
 }
 .error-main .lede { margin-bottom: var(--space-6); }
 
-/* ── 21. Responsive refinements ────────────────────────────────────────── */
+/* --- 21. Responsive refinements --- */
 @media (max-width: 767px) {
   :root { --nav-h: 56px; }
   .hero { padding: var(--space-10) 0 var(--space-8); }
@@ -1068,7 +1068,7 @@ img, svg { display: block; max-width: 100%; }
   :root { --container: 1280px; }
 }
 
-/* ── 22. Motion preferences ────────────────────────────────────────────── */
+/* --- 22. Motion preferences --- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
