@@ -193,6 +193,7 @@ img, svg { display: block; max-width: 100%; }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
+  transition: border-bottom-color var(--motion-base);
 }
 .nav-inner {
   max-width: var(--container);
@@ -222,7 +223,7 @@ img, svg { display: block; max-width: 100%; }
   50%      { opacity: 0.55; transform: scale(0.8); }
 }
 
-.nav-list { display: flex; gap: var(--space-1); }
+.nav-list { position: relative; display: flex; gap: var(--space-1); }
 .nav-link {
   display: inline-flex; align-items: center;
   min-height: var(--tap);
@@ -237,6 +238,20 @@ img, svg { display: block; max-width: 100%; }
 }
 .nav-link:hover { color: var(--color-text-primary); background: var(--color-surface-overlay); }
 .nav-link:active { background: var(--color-accent-soft); }
+.nav-link.is-active { color: var(--color-text-primary); }
+.nav.is-scrolled { border-bottom-color: rgba(130, 180, 64, 0.35); }
+/* one underline that slides between the active links */
+.nav-indicator {
+  position: absolute; left: 0; bottom: 4px;
+  height: 2px; width: 0;
+  background: var(--color-accent);
+  border-radius: var(--radius-xs);
+  opacity: 0;
+  transform-origin: left center;
+  transition: transform var(--motion-base) var(--ease-out), width var(--motion-base) var(--ease-out), opacity var(--motion-fast);
+  pointer-events: none;
+}
+.nav-indicator.is-on { opacity: 1; }
 .nav-link-ext::after {
   content: "↗"; margin-left: 4px; color: var(--color-accent);
 }
@@ -282,6 +297,8 @@ img, svg { display: block; max-width: 100%; }
   }
   .nav-list { flex-direction: column; gap: 0; }
   .nav-link { width: 100%; min-height: 48px; }
+  .nav-indicator { display: none; }
+  .nav-link.is-active { box-shadow: inset 3px 0 0 var(--color-accent); }
 }
 
 /* --- 5. Buttons --- */
@@ -382,6 +399,17 @@ img, svg { display: block; max-width: 100%; }
   margin-bottom: var(--space-5);
   text-wrap: balance;
 }
+/* Each word rises out of its own clip mask; the h1 itself stays put so the
+   glitch layers line up. JS wraps the words and sets --i for the stagger. */
+.hero-title.reveal { opacity: 1; transform: none; }
+.hero-title .w { display: inline-block; clip-path: inset(-0.1em 0 -0.25em 0); }
+.hero-title .w-in {
+  display: inline-block;
+  transform: translateY(115%);
+  transition: transform var(--motion-slow) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.hero-title.is-visible .w-in { transform: none; }
 .lede {
   max-width: 62ch;
   font-size: var(--text-lg);
@@ -571,6 +599,9 @@ img, svg { display: block; max-width: 100%; }
 }
 .field-number-wrap:hover { border-color: var(--color-text-muted); }
 .field-number-wrap:focus-within { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-soft); }
+.field.is-tick .field-number-wrap { border-color: var(--color-accent); }
+.field.is-tick .field-number { color: var(--color-accent); }
+.field-number { transition: color var(--motion-fast); }
 .field.is-invalid .field-number-wrap { border-color: var(--color-danger); }
 .field-number {
   width: 64px; min-height: 36px;
@@ -687,6 +718,16 @@ img, svg { display: block; max-width: 100%; }
 .panel-result { min-height: 320px; display: flex; flex-direction: column; }
 .panel-result[data-state="loading"] { animation: panel-pulse 1s ease-in-out infinite; }
 @keyframes panel-pulse { 50% { border-color: var(--color-accent); } }
+/* a thin line runs along the top edge when a new prediction lands */
+.panel-result::before {
+  content: ""; position: absolute; top: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--species-color, var(--color-accent)), transparent) no-repeat;
+  background-size: 35% 100%; background-position: -40% 0;
+  opacity: 0; pointer-events: none;
+}
+.panel-result.is-fresh { border-color: var(--species-color, var(--color-accent)); }
+.panel-result.is-fresh::before { animation: result-sweep 0.7s var(--ease-out) both; }
+@keyframes result-sweep { from { opacity: 1; background-position: -40% 0; } to { opacity: 1; background-position: 140% 0; } }
 
 .result-empty {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -815,6 +856,10 @@ img, svg { display: block; max-width: 100%; }
 .chart .hit { fill: transparent; cursor: crosshair; }
 .chart .dot { stroke: var(--color-surface-base); stroke-width: 2; transition: opacity var(--motion-fast), r var(--motion-fast); }
 .chart .dot.is-dim { opacity: 0.25; }
+/* dots sweep in left to right the first time the panel is on screen */
+.chart .dot { transform-box: fill-box; transform-origin: center; }
+.chart .dots.is-pending .dot { opacity: 0; transform: scale(0.3); }
+.chart .dots.is-sweeping .dot { transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
 .chart .dot:hover { r: 6; }
 .chart .query {
   fill: transparent; stroke: var(--color-text-primary); stroke-width: 2.5;
@@ -858,6 +903,15 @@ img, svg { display: block; max-width: 100%; }
   cursor: default;
 }
 .cm-cell:hover, .cm-cell:focus-visible { transform: scale(1.03); border-color: var(--color-accent); z-index: 1; }
+/* cells pop in one at a time once the panel is on screen; the diagonal flashes once after */
+.cm-cell.is-pending { opacity: 0; transform: scale(0.92); }
+.cm-cell.is-entering { transition: opacity var(--motion-slow) var(--ease-out), transform var(--motion-slow) var(--ease-out); }
+.cm-cell::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: var(--color-accent); opacity: 0; pointer-events: none;
+}
+.cm-cell.is-flash::after { animation: cm-flash 0.7s var(--ease-out) both; animation-delay: var(--flash-delay, 0ms); }
+@keyframes cm-flash { 0% { opacity: 0; } 35% { opacity: 0.4; } 100% { opacity: 0; } }
 .cm-cell small { font-family: var(--font-primary); font-weight: 400; font-size: 10px; color: inherit; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
 .cm-cell.is-diag { color: var(--color-text-primary); }
 .cm-cell.is-off { color: var(--color-text-secondary); }
@@ -1079,6 +1133,9 @@ img, svg { display: block; max-width: 100%; }
   .noise { animation: none; }
   .reveal { opacity: 1; transform: none; }
   .glitch::before, .glitch::after { display: none; }
+  .hero-title .w-in { transform: none; }
+  .cm-cell.is-pending, .chart .dots.is-pending .dot { opacity: 1; transform: none; }
+  .cm-cell::after, .panel-result::before { display: none; }
 }
 
 @media (forced-colors: active) {

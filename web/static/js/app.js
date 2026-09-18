@@ -123,6 +123,93 @@
     document.addEventListener("click", (e) => {
       if (!menu.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
     });
+
+    // accent line under the nav once the hero is scrolled past
+    const nav = $(".nav");
+    const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    // scroll-spy: highlight the section in view and slide the underline to it
+    const list = $(".nav-list", menu);
+    const links = $$(".nav-link", menu).filter((a) => a.getAttribute("href").startsWith("#"));
+    const sections = links.map((a) => $(a.getAttribute("href"))).filter(Boolean);
+    if (!sections.length || !("IntersectionObserver" in window)) return;
+
+    const indicator = el("span", { class: "nav-indicator", "aria-hidden": "true" });
+    list.appendChild(indicator);
+
+    const moveIndicator = (link) => {
+      if (!link) {
+        indicator.classList.remove("is-on");
+        return;
+      }
+      const l = link.getBoundingClientRect();
+      const p = list.getBoundingClientRect();
+      indicator.style.width = `${l.width - 30}px`;
+      indicator.style.transform = `translateX(${l.left - p.left + 15}px)`;
+      indicator.classList.add("is-on");
+    };
+
+    let active = null;
+    const setActive = (id) => {
+      if (active === id) return;
+      active = id;
+      let current = null;
+      links.forEach((a) => {
+        const on = a.getAttribute("href") === `#${id}`;
+        a.classList.toggle("is-active", on);
+        if (on) current = a;
+      });
+      moveIndicator(current);
+    };
+
+    const spy = new IntersectionObserver((entries) => {
+      const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (hit) setActive(hit.target.id);
+      else if (window.scrollY < sections[0].offsetTop - 200) setActive(null);
+    }, { rootMargin: "-35% 0px -55% 0px", threshold: [0, 0.1, 0.5] });
+    sections.forEach((sec) => spy.observe(sec));
+    window.addEventListener("resize", debounce(() => moveIndicator(links.find((a) => a.classList.contains("is-active"))), 100));
+  }
+
+  /* --- hero title: each word rises out of a clip mask, then the glitch fires once --- */
+
+  function initHeroTitle() {
+    const title = $("#hero-title");
+    if (!title || REDUCED) return;
+    const words = title.textContent.trim().split(/\s+/);
+    title.textContent = "";
+    words.forEach((word, i) => {
+      const inner = el("span", { class: "w-in" }, word);
+      inner.style.setProperty("--i", i);
+      const wrap = el("span", { class: "w" });
+      wrap.appendChild(inner);
+      title.appendChild(wrap);
+      if (i < words.length - 1) title.appendChild(document.createTextNode(" "));
+    });
+    // the reveal observer flips is-visible; fire the glitch once the last word has landed
+    const done = 600 + (words.length - 1) * 90 + 150;
+    setTimeout(() => {
+      title.classList.add("glitch-flash", "is-glitching");
+      setTimeout(() => title.classList.remove("glitch-flash", "is-glitching"), 600);
+    }, done);
+  }
+
+  /* --- run something once an element is on screen --- */
+
+  function whenVisible(target, fn) {
+    if (!("IntersectionObserver" in window) || REDUCED) {
+      fn();
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io.disconnect();
+        fn();
+      }
+    }, { threshold: 0.2 });
+    io.observe(target);
   }
 
   /* --- reveal on scroll --- */
@@ -236,9 +323,13 @@
     fields.forEach((f) => {
       paintRange(f.range);
 
+      let tickTimer = 0;
       f.range.addEventListener("input", () => {
         f.number.value = fmt(f.range.value);
         paintRange(f.range);
+        f.wrap.classList.add("is-tick");
+        clearTimeout(tickTimer);
+        tickTimer = setTimeout(() => f.wrap.classList.remove("is-tick"), 220);
         clearFieldError(f);
         clearActiveChip();
         updateScatterQuery();
@@ -373,6 +464,13 @@
       name.classList.remove("is-glitching");
       void name.offsetWidth; // restart animation
       name.classList.add("is-glitching");
+    }
+    if (!REDUCED) {
+      resultPanel.classList.remove("is-fresh");
+      void resultPanel.offsetWidth;
+      resultPanel.classList.add("is-fresh");
+      clearTimeout(state.freshTimer);
+      state.freshTimer = setTimeout(() => resultPanel.classList.remove("is-fresh"), 900);
     }
 
     $("#result-summary").textContent = data.summary;
@@ -520,6 +618,20 @@
 
     svg("g", { class: "query-layer" }, root);
     updateScatterQuery();
+
+    if (!REDUCED) {
+      const circles = $$(".dot", dots);
+      circles.forEach((c) => (c.style.transitionDelay = `${Math.round(((+c.getAttribute("cx") - m.l) / iw) * 600)}ms`));
+      dots.classList.add("is-pending");
+      whenVisible(scatterEl, () => {
+        dots.classList.add("is-sweeping");
+        requestAnimationFrame(() => requestAnimationFrame(() => dots.classList.remove("is-pending")));
+        setTimeout(() => {
+          dots.classList.remove("is-sweeping");
+          circles.forEach((c) => (c.style.transitionDelay = ""));
+        }, 1300);
+      });
+    }
   }
 
   function updateScatterQuery() {
@@ -582,6 +694,30 @@
       });
       root.appendChild(tr);
     });
+
+    if (!REDUCED) {
+      const cells = $$(".cm-cell", root);
+      cells.forEach((cell, i) => {
+        cell.classList.add("is-pending");
+        cell.style.transitionDelay = `${i * 40}ms`;
+      });
+      whenVisible(root, () => {
+        cells.forEach((cell) => cell.classList.add("is-entering"));
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          cells.forEach((cell, i) => {
+            cell.classList.remove("is-pending");
+            if (cell.classList.contains("is-diag")) {
+              cell.style.setProperty("--flash-delay", `${i * 40 + 350}ms`);
+              cell.classList.add("is-flash");
+            }
+          });
+        }));
+        setTimeout(() => cells.forEach((cell) => {
+          cell.classList.remove("is-entering");
+          cell.style.transitionDelay = "";
+        }), 1400);
+      });
+    }
   }
 
   /* --- K-curve line chart --- */
@@ -838,6 +974,7 @@
 
   document.documentElement.classList.remove("no-js");
   initNav();
+  initHeroTitle();
   initReveal();
   initCountUp();
   initFields();

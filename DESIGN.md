@@ -125,6 +125,26 @@ Real `<table>` elements with `scope`d headers, wrapped in `.table-scroll` for ho
 
 A CSS grid with `role="table"`, `role="row"` (`display: contents`), then `columnheader`, `rowheader` and `cell`. Cells are focusable and carry a full `aria-label` such as "2 virginica samples predicted as versicolor". The fill is one hue (the accent) scaled by `--v` from 0.05 to 0.7 alpha.
 
+### Motion
+
+Motion has two jobs here: show data arriving, and answer the user's actions. Nothing loops except the periodic glitch on the hero title and the ripple on the query point, and nothing moves on its own once the page has settled.
+
+On load and scroll:
+
+- Hero title: JavaScript wraps each word in a clip mask (`.w > .w-in`), the words rise with a 90 ms stagger, then the glitch fires once. The `h1` itself does not fade or move, so the glitch layers stay aligned with the text.
+- Sections and panels use `.reveal`, which fades up on entering the viewport with a 60 ms stagger between siblings. Stat values count up.
+- Scatter dots sweep in left to right the first time the panel is on screen (delay is proportional to the x position, 600 ms across the width). The K-curve line draws itself and histogram bars grow from the baseline in the same way.
+- Confusion matrix cells pop in one at a time (40 ms apart, scale 0.92 to 1), then the diagonal flashes once so the eye lands on the correct predictions.
+- The nav takes an accent border once the hero is scrolled past. A 2 px underline slides between Predict, Performance, Pipeline and API to mark the section in view; on mobile it becomes a 3 px inset bar on the active link.
+
+On interaction:
+
+- Dragging a slider colours the number box and its digits accent for 220 ms after each change.
+- A new prediction runs a thin line of the species colour along the top edge of the result panel and holds the border in that colour for 900 ms. The species name glitches only when the class changes.
+- Buttons lift on hover with the hard offset shadow, the copy button confirms with a label change, and the switch thumb slides.
+
+All of it uses the four motion tokens and `--ease-out`. Every entrance runs once (`IntersectionObserver` disconnects after the first hit) and clears its inline delays afterwards so hover transitions are not slowed down. Under `prefers-reduced-motion: reduce` the JavaScript skips the word split, the sweeps and the flashes, and the CSS shows everything in its final state.
+
 ### Toast, tooltip, skip link
 
 The toast is `role="status"`, dismisses itself after 2.6 s, and has an error variant with a danger border. The skip link is the first focusable element and becomes visible on focus.
@@ -140,7 +160,7 @@ Each item is pass or fail in implementation.
 5. The mobile menu toggle exposes `aria-expanded`, it flips on toggle, and Escape closes the menu.
 6. Tabs respond to arrow keys, and only the selected tab is in the tab order.
 7. The confusion matrix reads as a table with headers, and Lighthouse's `aria-required-children` and `aria-required-parent` audits pass.
-8. `prefers-reduced-motion: reduce` removes the count-ups, the glitch layers, the reveal transitions and the bar and line draw-in.
+8. `prefers-reduced-motion: reduce` removes the count-ups, the glitch layers, the reveal transitions, the hero word entrance, the scatter sweep, the confusion matrix pop-in and flash, the result panel sweep, and the bar and line draw-in.
 9. All targets are at least 44 by 44 px on touch.
 10. The page has one `<h1>`, sequential heading levels, a `lang` attribute, a meta description and a skip link.
 11. Lighthouse accessibility is 100 on mobile and desktop.
