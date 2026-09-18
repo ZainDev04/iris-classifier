@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Tooling
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local artefacts
+*.log
+*.zip
+/charts/

@@ -1,260 +1,224 @@
 """
-Data Classification Using AI
-------------------------------
+Data Classification Using AI — Iris KNN pipeline
+================================================
 DecodeLabs | Industrial Training Kit - Artificial Intelligence | Project 2
 
-This project implements a supervised learning pipeline using the Iris dataset.
-It demonstrates the full journey from raw data to validated predictions:
-load → scale → split → train → predict → evaluate.
+A complete supervised-learning workflow on the Iris dataset:
 
-Algorithm: K-Nearest Neighbors (KNN)
-Dataset:   Iris (150 samples, 4 features, 3 classes)
+    load → scale → split → train → predict → evaluate → tune K → visualise
+
+Run it end-to-end:
+
+    python classifier.py                # K=5, charts saved to assets/charts/
+    python classifier.py --k 7          # try a different K
+    python classifier.py --out charts   # write charts somewhere else
 
 Author: Shaikh Muhammad Zain
 """
 
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import (
+    accuracy_score,
     classification_report,
     confusion_matrix,
     f1_score,
-    accuracy_score
 )
+from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+
+# Same categorical palette as the web UI (validated for colour-blind safety).
+PALETTE = {"setosa": "#74a636", "versicolor": "#d9566f", "virginica": "#2f8fd6"}
+ACCENT = "#82b440"
+
+RANDOM_STATE = 42
+TEST_SIZE = 0.2
+K_RANGE = range(1, 21)
 
 
-# ─────────────────────────────────────────────
-# STEP 1: LOAD THE DATASET
-# ─────────────────────────────────────────────
-
-iris = load_iris()
-
-# Convert to a DataFrame so it's readable (also looks good in GitHub)
-df = pd.DataFrame(iris.data, columns=iris.feature_names)
-df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
-
-print("=" * 55)
-print("  DATA CLASSIFICATION USING AI — PROJECT 2")
-print("  DecodeLabs | Shaikh Muhammad Zain")
-print("=" * 55)
-
-print("\n📊 STEP 1: Dataset Overview")
-print(f"   Total samples  : {len(df)}")
-print(f"   Features       : {list(iris.feature_names)}")
-print(f"   Classes        : {list(iris.target_names)}")
-print(f"   Samples/class  : {dict(df['species'].value_counts())}")
-print()
-print(df.head(5).to_string(index=True))
+def banner(title: str) -> None:
+    print(f"\n{'─' * 60}\n  {title}\n{'─' * 60}")
 
 
-# ─────────────────────────────────────────────
-# STEP 2: FEATURE SCALING
-# Standardize so all 4 features are on the
-# same scale — critical for KNN since it
-# measures distances. Without scaling, a
-# feature with large numbers dominates.
-# ─────────────────────────────────────────────
+def run(k: int, out_dir: Path, show: bool) -> None:
+    matplotlib.use("Agg" if not show else matplotlib.get_backend())
+    import matplotlib.pyplot as plt  # imported after the backend is chosen
+    import seaborn as sns
 
-X = iris.data   # features (4 measurements)
-y = iris.target # labels (0=Setosa, 1=Versicolor, 2=Virginica)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+    # ── 1. Load ───────────────────────────────────────────────────────────
+    iris = load_iris()
+    df = pd.DataFrame(iris.data, columns=iris.feature_names)
+    df["species"] = pd.Categorical.from_codes(iris.target, iris.target_names)
 
-print("\n📐 STEP 2: Feature Scaling (StandardScaler)")
-print(f"   Before scaling — sepal length range: "
-      f"{X[:, 0].min():.1f} to {X[:, 0].max():.1f} cm")
-print(f"   After scaling  — sepal length range: "
-      f"{X_scaled[:, 0].min():.2f} to {X_scaled[:, 0].max():.2f} (standardized)")
+    print("=" * 60)
+    print("  DATA CLASSIFICATION USING AI — PROJECT 2")
+    print("  DecodeLabs | Shaikh Muhammad Zain")
+    print("=" * 60)
 
+    banner("STEP 1 · Dataset overview")
+    print(f"  Samples        : {len(df)}")
+    print(f"  Features       : {list(iris.feature_names)}")
+    print(f"  Classes        : {[str(n) for n in iris.target_names]}")
+    print(f"  Samples/class  : {df['species'].value_counts().to_dict()}")
+    print()
+    print(df.head().to_string())
 
-# ─────────────────────────────────────────────
-# STEP 3: TRAIN / TEST SPLIT
-# 80% for training, 20% for testing.
-# random_state=42 ensures reproducibility —
-# same split every time you run it.
-# ─────────────────────────────────────────────
+    # ── 2. Scale ──────────────────────────────────────────────────────────
+    # KNN measures Euclidean distance, so every feature must live on the same
+    # scale or the largest-valued one (sepal length) dominates the vote.
+    X, y = iris.data, iris.target
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y,
-    test_size=0.2,      # 20% goes to testing
-    random_state=42,    # reproducible results
-    stratify=y          # ensures all 3 classes are represented in both splits
-)
+    banner("STEP 2 · Feature scaling (StandardScaler)")
+    print(f"  sepal length before : {X[:, 0].min():.1f} → {X[:, 0].max():.1f} cm")
+    print(f"  sepal length after  : {X_scaled[:, 0].min():.2f} → {X_scaled[:, 0].max():.2f} (z-score)")
 
-print(f"\n✂️  STEP 3: Train/Test Split")
-print(f"   Training samples : {len(X_train)} (80%)")
-print(f"   Testing samples  : {len(X_test)} (20%)")
+    # ── 3. Split ──────────────────────────────────────────────────────────
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_scaled, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
+    )
+    banner("STEP 3 · Train / test split")
+    print(f"  Training : {len(X_train)} samples ({int((1 - TEST_SIZE) * 100)} %)")
+    print(f"  Testing  : {len(X_test)} samples ({int(TEST_SIZE * 100)} %)  — stratified, seed {RANDOM_STATE}")
 
+    # ── 4. Train ──────────────────────────────────────────────────────────
+    model = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
+    banner("STEP 4 · Train KNN")
+    print(f"  Algorithm : K-Nearest Neighbors, K = {k}")
 
-# ─────────────────────────────────────────────
-# STEP 4: TRAIN THE KNN MODEL
-# K=5 means: look at the 5 nearest neighbors
-# and take a majority vote.
-# ─────────────────────────────────────────────
+    # ── 5. Predict ────────────────────────────────────────────────────────
+    y_pred = model.predict(X_test)
+    banner("STEP 5 · Predictions on the test set")
+    results = pd.DataFrame(
+        {
+            "Actual": iris.target_names[y_test],
+            "Predicted": iris.target_names[y_pred],
+            "Correct": np.where(y_test == y_pred, "✓", "✗"),
+        }
+    )
+    print(results.to_string(index=False))
 
-model = KNeighborsClassifier(n_neighbors=5)
-model.fit(X_train, y_train)
+    # ── 6. Evaluate ───────────────────────────────────────────────────────
+    accuracy = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average="weighted")
+    cm = confusion_matrix(y_test, y_pred)
 
-print(f"\n🤖 STEP 4: Model Training")
-print(f"   Algorithm  : K-Nearest Neighbors")
-print(f"   K value    : 5 neighbors")
-print(f"   Training   : Complete ✓")
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+    cv_scores = cross_val_score(KNeighborsClassifier(n_neighbors=k), X_scaled, y, cv=cv)
 
+    banner("STEP 6 · Evaluation")
+    print(f"  Accuracy (test)     : {accuracy * 100:.2f} %")
+    print(f"  F1 score (weighted) : {f1:.4f}")
+    print(f"  5-fold CV accuracy  : {cv_scores.mean() * 100:.2f} % ± {cv_scores.std() * 100:.2f}")
+    print("\n  Confusion matrix (rows = actual, columns = predicted)")
+    print(
+        pd.DataFrame(
+            cm,
+            index=[f"actual {n}" for n in iris.target_names],
+            columns=[f"pred {n}" for n in iris.target_names],
+        ).to_string()
+    )
+    print("\n  Classification report")
+    print(classification_report(y_test, y_pred, target_names=iris.target_names))
 
-# ─────────────────────────────────────────────
-# STEP 5: PREDICTIONS
-# ─────────────────────────────────────────────
+    # ── 7. Tune K ─────────────────────────────────────────────────────────
+    k_scores = [
+        accuracy_score(y_test, KNeighborsClassifier(n_neighbors=kk).fit(X_train, y_train).predict(X_test))
+        for kk in K_RANGE
+    ]
+    best_k = list(K_RANGE)[int(np.argmax(k_scores))]
+    banner("STEP 7 · Elbow method")
+    print(f"  Best K on the test split : {best_k} ({max(k_scores) * 100:.2f} %)")
+    print(f"  Using K = {k} keeps the decision boundary smooth instead of chasing one split.")
 
-y_pred = model.predict(X_test)
+    # ── 8. Visualise ──────────────────────────────────────────────────────
+    banner("STEP 8 · Charts")
+    sns.set_theme(style="whitegrid", font="DejaVu Sans")
 
-print(f"\n🔮 STEP 5: Predictions on Test Set")
-actual_names    = [iris.target_names[i] for i in y_test]
-predicted_names = [iris.target_names[i] for i in y_pred]
-results_df = pd.DataFrame({
-    'Actual'    : actual_names,
-    'Predicted' : predicted_names,
-    'Correct'   : ['✓' if a == p else '✗'
-                   for a, p in zip(actual_names, predicted_names)]
-})
-print(results_df.to_string(index=False))
+    plt.figure(figsize=(6.5, 5))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap=sns.light_palette(ACCENT, as_cmap=True),
+        cbar=False,
+        xticklabels=iris.target_names,
+        yticklabels=iris.target_names,
+        linewidths=2,
+        linecolor="white",
+    )
+    plt.title(f"Confusion matrix — KNN (K={k})", pad=12)
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.tight_layout()
+    plt.savefig(out_dir / "confusion_matrix.png", dpi=150)
+    plt.close()
+    print(f"  → {out_dir / 'confusion_matrix.png'}")
 
+    plt.figure(figsize=(8, 4))
+    plt.plot(list(K_RANGE), [s * 100 for s in k_scores], marker="o", color=ACCENT, linewidth=2)
+    plt.axvline(k, color="#545454", linestyle="--", label=f"chosen K = {k}")
+    plt.title("Test accuracy vs K (elbow method)")
+    plt.xlabel("K (number of neighbours)")
+    plt.ylabel("Accuracy (%)")
+    plt.xticks(list(K_RANGE))
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_dir / "k_vs_accuracy.png", dpi=150)
+    plt.close()
+    print(f"  → {out_dir / 'k_vs_accuracy.png'}")
 
-# ─────────────────────────────────────────────
-# STEP 6: EVALUATION
-# Accuracy alone can be misleading on
-# imbalanced datasets. F1 Score (harmonic mean
-# of precision and recall) gives a truer picture.
-# ─────────────────────────────────────────────
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    for ax, feature in zip(axes.flatten(), iris.feature_names):
+        for name in iris.target_names:
+            ax.hist(df.loc[df["species"] == name, feature], bins=12, alpha=0.75, label=name, color=PALETTE[name])
+        ax.set_title(feature)
+        ax.set_xlabel("cm")
+        ax.set_ylabel("count")
+        ax.legend(fontsize=8)
+    fig.suptitle("Feature distribution by species", y=1.01)
+    plt.tight_layout()
+    plt.savefig(out_dir / "feature_distribution.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"  → {out_dir / 'feature_distribution.png'}")
 
-accuracy = accuracy_score(y_test, y_pred)
-f1       = f1_score(y_test, y_pred, average='weighted')
-cm       = confusion_matrix(y_test, y_pred)
+    # ── 9. Predict a new flower ───────────────────────────────────────────
+    banner("STEP 9 · Predict a new flower")
+    new_flower = np.array([[5.1, 3.5, 1.4, 0.2]])
+    proba = model.predict_proba(scaler.transform(new_flower))[0]
+    print("  Input  : sepal 5.1 × 3.5 cm, petal 1.4 × 0.2 cm")
+    print(f"  Result : {iris.target_names[int(np.argmax(proba))].upper()}")
+    for name, p in zip(iris.target_names, proba):
+        print(f"  {name:12} {'█' * int(p * 20):20} {p * 100:5.1f} %")
 
-print(f"\n📈 STEP 6: Model Evaluation")
-print(f"   Accuracy  : {accuracy * 100:.2f}%")
-print(f"   F1 Score  : {f1:.4f}")
-print(f"\n   Confusion Matrix:")
-print(f"   (rows = actual, columns = predicted)")
-cm_df = pd.DataFrame(
-    cm,
-    index   = [f'Actual: {n}'    for n in iris.target_names],
-    columns = [f'Pred: {n}' for n in iris.target_names]
-)
-print(cm_df.to_string())
-print(f"\n   Classification Report:")
-print(classification_report(y_test, y_pred, target_names=iris.target_names))
-
-
-# ─────────────────────────────────────────────
-# STEP 7: FIND OPTIMAL K (ELBOW METHOD)
-# Test K values from 1 to 20, plot the
-# accuracy curve to find the "elbow" — the
-# point where adding more neighbors stops
-# improving accuracy.
-# ─────────────────────────────────────────────
-
-k_range  = range(1, 21)
-k_scores = []
-for k in k_range:
-    knn = KNeighborsClassifier(n_neighbors=k)
-    knn.fit(X_train, y_train)
-    k_scores.append(accuracy_score(y_test, knn.predict(X_test)))
-
-best_k = k_range[k_scores.index(max(k_scores))]
-print(f"\n🎯 STEP 7: Optimal K (Elbow Method)")
-print(f"   Best K found : {best_k} (accuracy: {max(k_scores)*100:.2f}%)")
-
-
-# ─────────────────────────────────────────────
-# STEP 8: VISUALIZATIONS
-# Save 3 charts as PNG files:
-# 1. Confusion matrix heatmap
-# 2. K vs Accuracy (elbow curve)
-# 3. Feature distribution by species
-# ─────────────────────────────────────────────
-
-# --- Chart 1: Confusion Matrix Heatmap ---
-plt.figure(figsize=(7, 5))
-sns.heatmap(
-    cm,
-    annot=True, fmt='d',
-    cmap='Blues',
-    xticklabels=iris.target_names,
-    yticklabels=iris.target_names
-)
-plt.title('Confusion Matrix — KNN Iris Classifier', fontsize=13, pad=12)
-plt.xlabel('Predicted Label')
-plt.ylabel('Actual Label')
-plt.tight_layout()
-plt.savefig('confusion_matrix.png', dpi=150)
-plt.close()
-print("\n📊 Charts saved:")
-print("   → confusion_matrix.png")
-
-# --- Chart 2: K vs Accuracy ---
-plt.figure(figsize=(8, 4))
-plt.plot(k_range, [s * 100 for s in k_scores],
-         marker='o', color='steelblue', linewidth=2)
-plt.axvline(x=best_k, color='orange', linestyle='--',
-            label=f'Best K = {best_k}')
-plt.title('K Value vs Accuracy (Elbow Method)', fontsize=13)
-plt.xlabel('K (Number of Neighbors)')
-plt.ylabel('Accuracy (%)')
-plt.legend()
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('k_vs_accuracy.png', dpi=150)
-plt.close()
-print("   → k_vs_accuracy.png")
-
-# --- Chart 3: Feature Distribution ---
-fig, axes = plt.subplots(2, 2, figsize=(10, 7))
-features = iris.feature_names
-colors   = ['#4C72B0', '#DD8452', '#55A868']
-for idx, (ax, feature) in enumerate(zip(axes.flatten(), features)):
-    for cls_idx, cls_name in enumerate(iris.target_names):
-        vals = df[df['species'] == cls_name][feature]
-        ax.hist(vals, alpha=0.6, label=cls_name,
-                color=colors[cls_idx], bins=12)
-    ax.set_title(feature, fontsize=10)
-    ax.set_xlabel('cm')
-    ax.set_ylabel('Count')
-    ax.legend(fontsize=8)
-fig.suptitle('Feature Distribution by Species', fontsize=13, y=1.01)
-plt.tight_layout()
-plt.savefig('feature_distribution.png', dpi=150)
-plt.close()
-print("   → feature_distribution.png")
+    print(f"\n{'=' * 60}")
+    print(f"  DONE · accuracy {accuracy * 100:.2f} % · F1 {f1:.4f} · K={k}")
+    print(f"{'=' * 60}\n")
 
 
-# ─────────────────────────────────────────────
-# STEP 9: PREDICT A NEW FLOWER
-# Show the model being used for a real
-# prediction on unseen data — good demo.
-# ─────────────────────────────────────────────
+def main() -> None:
+    # Windows consoles default to a legacy code page; make box-drawing characters safe.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    parser = argparse.ArgumentParser(description="Train and evaluate a KNN classifier on the Iris dataset.")
+    parser.add_argument("--k", type=int, default=5, help="number of neighbours (default: 5)")
+    parser.add_argument("--out", type=Path, default=Path("assets/charts"), help="directory for the PNG charts")
+    parser.add_argument("--no-show", action="store_true", help="never open a plot window (CI / headless)")
+    args = parser.parse_args()
+    run(k=args.k, out_dir=args.out, show=not args.no_show)
 
-print(f"\n🌸 STEP 9: Predict a New Flower")
-new_flower = np.array([[5.1, 3.5, 1.4, 0.2]])  # typical Setosa measurements
-new_flower_scaled = scaler.transform(new_flower)
-prediction = model.predict(new_flower_scaled)
-probability = model.predict_proba(new_flower_scaled)
 
-print(f"   Input  : sepal=5.1×3.5cm, petal=1.4×0.2cm")
-print(f"   Result : {iris.target_names[prediction[0]].upper()}")
-print(f"   Confidence breakdown:")
-for name, prob in zip(iris.target_names, probability[0]):
-    bar = '█' * int(prob * 20)
-    print(f"   {name:12} {bar} {prob*100:.1f}%")
-
-print(f"\n{'=' * 55}")
-print(f"  PROJECT 2 COMPLETE ✓")
-print(f"  Accuracy: {accuracy*100:.2f}% | F1: {f1:.4f} | K={5}")
-print(f"{'=' * 55}\n")
+if __name__ == "__main__":
+    main()
