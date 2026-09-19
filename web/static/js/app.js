@@ -11,10 +11,11 @@
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const SPECIES = ["setosa", "versicolor", "virginica"];
+  // token references, not literals, so both themes drive the same charts
   const COLORS = {
-    setosa: "#74a636",
-    versicolor: "#d9566f",
-    virginica: "#2f8fd6",
+    setosa: "var(--color-setosa)",
+    versicolor: "var(--color-versicolor)",
+    virginica: "var(--color-virginica)",
   };
   const FEATURE_KEYS = ["sepal_length", "sepal_width", "petal_length", "petal_width"];
   const FEATURE_LABELS = ["Sepal length", "Sepal width", "Petal length", "Petal width"];
@@ -465,7 +466,7 @@
 
   function renderResult(data) {
     state.lastResult = data;
-    const color = COLORS[data.species] || "#82b440";
+    const color = COLORS[data.species] || "var(--color-accent)";
     resultPanel.style.setProperty("--species-color", color);
 
     const name = $("#result-name");
@@ -610,9 +611,9 @@
         cx: sx(p.x[xi]).toFixed(1),
         cy: sy(p.x[yi]).toFixed(1),
         r: 4.5,
-        fill: COLORS[SPECIES[p.y]],
         tabindex: "-1",
       }, dots);
+      c.style.setProperty("fill", COLORS[SPECIES[p.y]]);
       const show = (e) => showTooltip(
         `<strong>${cap(SPECIES[p.y])}</strong>` +
         ttRow(feats[xi].label, `${fmt(p.x[xi])} cm`) +
@@ -885,14 +886,14 @@
           x: x.toFixed(1), y: y.toFixed(1),
           width: barW.toFixed(1), height: h.toFixed(1),
           rx: Math.min(4, barW / 2), ry: Math.min(4, barW / 2),
-          fill: COLORS[s],
         }, root);
+        bar.style.setProperty("fill", COLORS[s]);
         // square off the baseline so only the top end is rounded
-        svg("rect", {
+        const foot = svg("rect", {
           x: x.toFixed(1), y: (m.t + ih - Math.min(4, h)).toFixed(1),
           width: barW.toFixed(1), height: Math.min(4, h).toFixed(1),
-          fill: COLORS[s],
         }, root);
+        foot.style.setProperty("fill", COLORS[s]);
         const show = (e) => showTooltip(
           `<strong>${cap(s)}</strong>` +
           ttRow(feat.label, `${fmt(lo + b * width)} to ${fmt(lo + (b + 1) * width)} cm`) +

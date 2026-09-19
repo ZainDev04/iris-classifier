@@ -45,6 +45,8 @@ Model exploration. Every chart is drawn in the browser from the live model. Ther
 - Test accuracy for K from 1 to 20, with hover tooltips.
 - A histogram per feature, split by species.
 
+Themes. The page is dark by default and switches to light from a button in the nav. The choice is saved in the browser; without one the page follows the system setting. Both themes use the same tokens, so the charts repaint without being redrawn.
+
 Engineering. The API is versioned under `/api/` and validates its input. The page ships a strict Content-Security-Policy with no inline scripts or styles and no third-party requests. Static assets carry a content hash in their URL. There are 25 pytest cases covering the model service and every route, run in CI on Python 3.11 and 3.12.
 
 <details>
@@ -148,7 +150,8 @@ iris-classifier/
 |   |-- templates/           # index.html (single page), error.html
 |   |-- static/
 |   |   |-- css/style.css    # token-driven stylesheet (see DESIGN.md)
-|   |   `-- js/app.js        # sliders, live predict, SVG charts, no dependencies
+|   |   |-- js/app.js        # sliders, live predict, SVG charts, no dependencies
+|   |   `-- js/theme.js      # dark and light switch, applied before first paint
 |   `-- requirements.txt     # runtime deps for the web service
 |-- tests/                   # pytest: model service + HTTP routes
 |-- assets/                  # screenshots and generated charts
@@ -166,7 +169,7 @@ The site runs on Vercel. `web/app.py` is deployed as a Python serverless functio
 
 Lighthouse, mobile emulation with throttling: performance 100, accessibility 100, best practices 100, SEO 100. Desktop gives the same four scores.
 
-Accessibility: every text colour passes WCAG 2.2 AA on its background. The whole page works from the keyboard (menu, sliders, tabs, presets, selects). Focus rings are visible. Results are announced through a live region. `prefers-reduced-motion` turns off every animation. Touch targets are at least 44 px.
+Accessibility: every text colour passes WCAG 2.2 AA on its background, in both themes. The whole page works from the keyboard (menu, sliders, tabs, presets, selects). Focus rings are visible. Results are announced through a live region. `prefers-reduced-motion` turns off every animation. Touch targets are at least 44 px.
 
 Responsive: checked at 320, 360, 390, 412, 480, 767, 1024 and 1440 px with no horizontal overflow.
 
@@ -176,7 +179,7 @@ Performance: no web fonts, no images on the page (charts are inline SVG), about 
 
 ## Design
 
-The UI follows the Glitch brief: black surface, `#82b440` accent, Helvetica Neue, a 5 px spacing scale, 4 px radii, hard offset shadows, and a glitch treatment on the main heading. The three species colours were picked with a colour-vision-deficiency check so they stay distinguishable for protan, deutan and tritan viewers. Tokens, component state rules and the acceptance criteria are in [DESIGN.md](DESIGN.md).
+The UI follows the Glitch brief: black surface, `#82b440` accent, Helvetica Neue, a 5 px spacing scale, 4 px radii, hard offset shadows, and a glitch treatment on the main heading. The light theme keeps the same structure with darker greens, since the accent on white reads at only 2.4 : 1. The three species colours were picked with a colour-vision-deficiency check so they stay distinguishable for protan, deutan and tritan viewers. Tokens, component state rules and the acceptance criteria are in [DESIGN.md](DESIGN.md).
 
 ## Author
 

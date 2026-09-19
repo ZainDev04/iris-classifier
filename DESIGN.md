@@ -4,19 +4,19 @@ UI rules for the Iris classifier web app. They come from the Glitch design brief
 
 ## 1. Context and goals
 
-In one sentence: a dark, glitch-styled, single-page ML demo that stays fast, works from the keyboard and reads well on every screen from 320 px up.
+In one sentence: a dark, glitch-styled, single-page ML demo that stays fast, works from the keyboard and reads well on every screen from 320 px up. It also ships a light theme for people who prefer one.
 
 | | |
 |---|---|
 | Surface | Single-page Flask app, no build step |
 | Audience | Recruiters, interviewers and other students. They skim first and dig later. |
-| Theme | Dark only (`color-scheme: dark`) |
+| Theme | Dark by default, light on request. The visitor's choice is saved; with no choice saved the page follows `prefers-color-scheme`. |
 | Fonts | System Helvetica Neue stack, no web-font requests |
 | Accessibility target | WCAG 2.2 AA |
 
 ## 2. Tokens and foundations
 
-All tokens are defined on `:root` in `web/static/css/style.css`. Components must reference tokens, never raw values.
+All tokens are defined on `:root` in `web/static/css/style.css`, and the light theme redefines the colour ones under `[data-theme="light"]`. Components must reference tokens, never raw values, which is what lets one attribute repaint the whole page.
 
 ### Colour
 
@@ -42,6 +42,32 @@ All tokens are defined on `:root` in `web/static/css/style.css`. Components must
 
 The three species colours were checked with a colour-vision-deficiency validator (OKLab delta E) against the black surface. They pass the lightness band, the chroma floor, the protan, deutan and tritan separation checks and the normal-vision floor. Colour is never the only carrier of identity: every series also has a text label or a legend entry.
 
+#### Light theme
+
+Same token names, different values, so no component knows which theme it is in. The greens are darkened because `#82b440` on white is only 2.4 : 1, and the species hues keep their identity while gaining enough weight for a white surface.
+
+| Token | Value | Contrast on white |
+|---|---|---|
+| `--color-surface-base` | `#ffffff` | |
+| `--color-surface-raised` | `#f6f6f4` | |
+| `--color-surface-overlay` | `#ececea` | |
+| `--color-surface-inset` | `#fbfbfa` | |
+| `--color-border` | `#dcdcd8` | |
+| `--color-border-strong` | `#8f8f88` | 3.3 : 1, so it also works as a control border |
+| `--color-text-primary` | `#101010` | 19 : 1 |
+| `--color-text-secondary` | `#4d4d4d` | 8.5 : 1 |
+| `--color-text-muted` | `#5f5f5f` | 6.4 : 1 |
+| `--color-accent` | `#4b7419` | 5.5 : 1, and 5.5 : 1 for white text on it |
+| `--color-accent-strong` | `#3a5a12` | 7.6 : 1 |
+| `--color-link` | `#41641a` | 6.9 : 1 |
+| `--color-danger` | `#b3261e` | 6.5 : 1 |
+| `--color-warning` | `#8a5a00` | 5.9 : 1 |
+| `--color-setosa` | `#4b6f1f` | 5.9 : 1 |
+| `--color-versicolor` | `#a8324a` | 6.5 : 1 |
+| `--color-virginica` | `#1f6aa5` | 5.7 : 1 |
+
+Four more tokens exist so nothing has to hard-code a colour that only suits one theme: `--color-surface-nav` (the translucent bar), `--color-accent-hover` (lighter on dark, darker on light), `--atmos-scanline` with `--atmos-noise-a` and `--atmos-noise-b` (the film grain, which darkens on white instead of lightening), and `--heat-rgb` (the confusion matrix ramp, as bare channels so the alpha can vary).
+
 ### Typography
 
 | Token | Value |
@@ -57,7 +83,7 @@ The three species colours were checked with a colour-vision-deficiency validator
 
 - Spacing scale on a 5 px base: `--space-1` to `--space-20` are 5, 10, 15, 20, 25, 30, 40, 50, 60, 80 and 100 px. No off-scale values.
 - `--radius-xs: 4px` on everything rectangular. `--radius-pill` is for the switch only.
-- `--shadow-1: 0 2px 0 0 rgb(111 154 55)` is the brief's hard offset shadow, used on primary buttons and step numbers. `--shadow-2` (4 px) is the hover state.
+- `--shadow-1: 0 2px 0 0 var(--color-accent-strong)` is the brief's hard offset shadow, used on primary buttons and step numbers. `--shadow-2` (4 px) is the hover state.
 - Motion: `--motion-fast` 150 ms, `--motion-base` 250 ms, `--motion-slow` 600 ms, `--ease-out cubic-bezier(.16,1,.3,1)`. Glitch effects use `steps(2, end)`.
 - Touch target: `--tap: 44px` minimum on every interactive element.
 
@@ -123,7 +149,7 @@ Real `<table>` elements with `scope`d headers, wrapped in `.table-scroll` for ho
 
 ### Confusion matrix (`.cm`)
 
-A CSS grid with `role="table"`, `role="row"` (`display: contents`), then `columnheader`, `rowheader` and `cell`. Cells are focusable and carry a full `aria-label` such as "2 virginica samples predicted as versicolor". The fill is one hue (the accent) scaled by `--v` from 0.05 to 0.7 alpha.
+A CSS grid with `role="table"`, `role="row"` (`display: contents`), then `columnheader`, `rowheader` and `cell`. Cells are focusable and carry a full `aria-label` such as "2 virginica samples predicted as versicolor". The fill is one hue (the accent) scaled by `--v` from 0.05 to 0.65 alpha; 0.65 is the ceiling because the 10 px caption inside the darkest cell has to stay above 4.5 : 1.
 
 ### Motion
 
@@ -145,6 +171,14 @@ On interaction:
 
 All of it uses the four motion tokens and `--ease-out`. Every entrance runs once (`IntersectionObserver` disconnects after the first hit) and clears its inline delays afterwards so hover transitions are not slowed down. Under `prefers-reduced-motion: reduce` the JavaScript skips the word split, the sweeps and the flashes, and the CSS shows everything in its final state.
 
+### Theme switch (`.theme-toggle`)
+
+A 44 px icon button in the nav, to the right of the links and next to the menu toggle on mobile. It shows the theme it switches to: a sun on dark, a moon on light. It has no visible label, so the accessible name carries the action ("Switch to light theme") and flips with the state.
+
+`web/static/js/theme.js` runs in the head, before the first paint, so a saved choice never flashes the wrong colours. It reads `localStorage["iris-theme"]`, falls back to `prefers-color-scheme`, writes `data-theme` on `<html>` and keeps the `theme-color` meta tag in step. A click saves the new value and fires a `themechange` event on `<html>`. Storage can throw in private mode, so every read and write is wrapped and the page still works without it.
+
+Charts hold token references (`var(--color-setosa)`), not literals, and set them through the CSSOM rather than a `style` attribute, which the CSP blocks. That is why a switch repaints the marks with no re-render.
+
 ### Toast, tooltip, skip link
 
 The toast is `role="status"`, dismisses itself after 2.6 s, and has an error variant with a danger border. The skip link is the first focusable element and becomes visible on focus.
@@ -153,7 +187,7 @@ The toast is `role="status"`, dismisses itself after 2.6 s, and has an error var
 
 Each item is pass or fail in implementation.
 
-1. Every text and background pair in the token table measures at least 4.5 : 1 (3 : 1 for text at 24 px or larger, or bold at 19 px or larger). Check with a contrast tool against `#000`, `#0a0a0a` and `#121212`.
+1. Every text and background pair in the token table measures at least 4.5 : 1 (3 : 1 for text at 24 px or larger, or bold at 19 px or larger), in both themes. Check against `#000`, `#0a0a0a` and `#121212` on dark, and `#ffffff`, `#f6f6f4` and `#ececea` on light. Translucent fills, such as the confusion matrix cells, are measured after compositing.
 2. Tab through the whole page. Every control is reachable in visual order, every one shows the accent focus ring, and none traps focus.
 3. With a screen reader, run a prediction. The result is announced once, and the visible panel does not duplicate it.
 4. Sliders report a value in centimetres, not a bare number.
@@ -182,7 +216,7 @@ Numbers use tabular monospaced digits. Units are spelled out on first use ("cent
 
 These are prohibited.
 
-- Raw hex values in component CSS, or new spacing and font sizes outside the scale.
+- Raw hex values in component CSS, or new spacing and font sizes outside the scale. A new colour token has to be given a value in both themes.
 - Removing or recolouring the focus ring, or `outline: none` without a replacement.
 - Colour as the only carrier of meaning (species, status) without a label, icon or pattern.
 - Inline `style=""` attributes or inline `<script>`; they break the CSP.
@@ -207,6 +241,7 @@ Migrating from v1 (Inter, navy, light theme): all v1 class names were retired. T
 
 - [ ] `python -m pytest` passes
 - [ ] Lighthouse mobile and desktop: 100 in all four categories
+- [ ] Both themes: switch on every section, reload to confirm the choice sticks, and check the charts repaint
 - [ ] Widths 320, 360, 390, 412, 430, 480, 767, 1024 and 1440 px: no horizontal scroll, no clipped controls
 - [ ] Keyboard-only run-through: nav, sliders, presets, switch, submit, tabs, axis selects, copy buttons
 - [ ] Screen-reader run-through of a prediction
